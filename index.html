@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad 互换嵌套美学排版生成器 V3.2</title>
+    <title>Riyad 互换嵌套美学排版生成器 V3.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -77,7 +77,7 @@
             <span class="p-1.5 bg-[#8B7355] rounded-lg text-white">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.2</span>
+            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.3</span>
         </div>
         <button onclick="LayerManager.loadSampleAssets()" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
             <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
@@ -176,7 +176,7 @@
                 <span class="p-1.5 bg-[#8B7355] rounded-xl text-white">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </span>
-                <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.2</span>
+                <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.3</span>
             </div>
             <p class="text-[11px] text-zinc-400">“你中有我，我中有你” 镜像互换排版工具</p>
             <hr class="border-[#EFEAE2] mt-4">
@@ -889,7 +889,7 @@
         };
 
         // ----------------------------------------------------
-        // 6. ExportEngine (免网络加载、高质拼图导出)
+        // 6. ExportEngine (防黑防白大图渲染与显存强制自释放引擎)
         // ----------------------------------------------------
         const ExportEngine = {
             async generate() {
@@ -904,7 +904,7 @@
                 }
 
                 const origHTML = UI.btnDownload.innerHTML;
-                UI.btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">超清直出防黑屏中...</span>`;
+                UI.btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清重写无损中...</span>`;
                 lucide.createIcons();
 
                 let outW = 1600;
@@ -943,7 +943,6 @@
                         drawH = w / imgRatio * scale;
                     }
 
-                    // 基于 (底图缩放尺寸 - 容器物理尺寸) * 偏移百分比 完美映射
                     drawX = x + (w - drawW) * (offset.x / 100);
                     drawY = y + (h - drawH) * (offset.y / 100);
 
@@ -959,8 +958,8 @@
 
                 // 3. 计算中心嵌套尺寸与边框大小
                 const boxSize = outW * (state.centerSize / 100);
-                const radiusPx = state.radius * (outW / 320); // 比例对应缩放
-                const borderPx = state.borderWidth * (outW / 320); // 边框宽度等比放大
+                const radiusPx = state.radius * (outW / 320); 
+                const borderPx = state.borderWidth * (outW / 320); 
 
                 // 绘制上半嵌套 (图B)
                 ctx.save();
@@ -980,9 +979,8 @@
 
                 drawLayerToCanvas(state.imageB, topBoxX, topBoxY, boxSize, boxSize, state.offsetTopFg, state.scaleTopFg);
                 
-                // 绘制嵌套框边框
                 if (borderPx > 0) {
-                    ctx.restore(); // 退出当前裁剪层
+                    ctx.restore(); 
                     ctx.save();
                     ctx.strokeStyle = state.borderColor;
                     ctx.lineWidth = borderPx;
@@ -1009,9 +1007,8 @@
 
                 drawLayerToCanvas(state.imageA, bottomBoxX, bottomBoxY, boxSize, boxSize, state.offsetBottomFg, state.scaleBottomFg);
                 
-                // 绘制嵌套框边框
                 if (borderPx > 0) {
-                    ctx.restore(); // 退出裁剪层
+                    ctx.restore(); 
                     ctx.save();
                     ctx.strokeStyle = state.borderColor;
                     ctx.lineWidth = borderPx;
@@ -1034,7 +1031,7 @@
                     ctx.restore();
                 }
 
-                // 5. 导出并呼出下载弹层
+                // 5. 导出并呼出下载弹层，同时强行彻底清空 Canvas 显存，防止出现“第三次黑图”
                 setTimeout(() => {
                     try {
                         const dataURL = canvas.toDataURL('image/png');
@@ -1045,7 +1042,7 @@
                             document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                         } else {
                             const link = document.createElement('a');
-                            link.download = `riyad_inverse_v3_2_${Date.now()}.png`;
+                            link.download = `riyad_inverse_v3_3_${Date.now()}.png`;
                             link.href = dataURL;
                             document.body.appendChild(link);
                             link.click();
@@ -1056,6 +1053,10 @@
                         document.getElementById('modal-download-img').src = dataURL;
                         document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                     } finally {
+                        // 【硬核安全保护】生成图片后，彻底抹除和销毁 Canvas 临时占用的所有 GPU 显存资源！
+                        canvas.width = 0;
+                        canvas.height = 0;
+                        
                         UI.btnDownload.innerHTML = origHTML;
                         lucide.createIcons();
                     }
@@ -1082,10 +1083,11 @@
         };
 
         // ----------------------------------------------------
-        // 7. Storage (配置草稿自动存储)
+        // 7. Storage (配置草稿自动安全存储 - 剥离失效图片文件指针)
         // ----------------------------------------------------
         const Storage = {
             autoSave() {
+                // 安全机制：只存储用户的微调参数，彻底不存储已过期的 Blob 文件 URL
                 const config = {
                     ratio: LayerManager.state.ratio,
                     centerSize: LayerManager.state.centerSize,
@@ -1102,14 +1104,15 @@
                     scaleBottomBg: LayerManager.state.scaleBottomBg,
                     scaleBottomFg: LayerManager.state.scaleBottomFg
                 };
-                localStorage.setItem('riyad_inverse_v3_2_draft', JSON.stringify(config));
+                localStorage.setItem('riyad_inverse_v3_3_draft', JSON.stringify(config));
             },
 
             loadDraft() {
-                const raw = localStorage.getItem('riyad_inverse_v3_2_draft');
+                const raw = localStorage.getItem('riyad_inverse_v3_3_draft');
                 if (!raw) return;
                 try {
                     const parsed = JSON.parse(raw);
+                    // 安全混入参数
                     Object.assign(LayerManager.state, parsed);
                     
                     UI.inputCenterSize.value = LayerManager.state.centerSize;
