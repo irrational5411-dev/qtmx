@@ -380,27 +380,28 @@
         };
 
         // ----------------------------------------------------
-        // 2. LayerManager (图层属性状态集中管理)
+        // 2. LayerManager (图层属性状态集中管理 - 彻底统一 DataURL 为唯一 Truth)
         // ----------------------------------------------------
         const LayerManager = {
             state: {
-                imageA: null,
-                imageB: null,
-                ratio: '1-1', // 1-1 | 3-4 | 9-16
-                centerSize: 35, // 嵌套占比百分数
-                radius: 0, // 圆角值
-                grainOpacity: 0.06, // 噪点比率
+                imageA: null, // HTMLImageElement
+                imageB: null, // HTMLImageElement
+                imageASrc: "", // Base64 唯一数据源
+                imageBSrc: "", // Base64 唯一数据源
                 
-                borderWidth: 1, // 嵌套边框宽度 (px)
-                borderColor: '#FFFFFF', // 嵌套边框颜色
+                ratio: '1-1', 
+                centerSize: 35, 
+                radius: 0, 
+                grainOpacity: 0.06, 
+                
+                borderWidth: 1, 
+                borderColor: '#FFFFFF', 
 
-                // 平移定位偏移量 (50代表居中)
                 offsetTopBg: { x: 50, y: 50 },
                 offsetTopFg: { x: 50, y: 50 },
                 offsetBottomBg: { x: 50, y: 50 },
                 offsetBottomFg: { x: 50, y: 50 },
 
-                // 四图层独立缩放比率
                 scaleTopBg: 1.0,
                 scaleTopFg: 1.0,
                 scaleBottomBg: 1.0,
@@ -451,6 +452,7 @@
                 imgA.crossOrigin = "anonymous";
                 imgA.onload = () => {
                     this.state.imageA = imgA;
+                    this.state.imageASrc = sampleA;
                     document.getElementById('img-preview-a').src = sampleA;
                     document.getElementById('preview-container-a').classList.remove('hidden');
                     document.getElementById('placeholder-a').classList.add('hidden');
@@ -462,6 +464,7 @@
                 imgB.crossOrigin = "anonymous";
                 imgB.onload = () => {
                     this.state.imageB = imgB;
+                    this.state.imageBSrc = sampleB;
                     document.getElementById('img-preview-b').src = sampleB;
                     document.getElementById('preview-container-b').classList.remove('hidden');
                     document.getElementById('placeholder-b').classList.add('hidden');
@@ -484,7 +487,6 @@
                 this.inputBorderWidth = document.getElementById('input-border-width');
                 this.inputBorderColor = document.getElementById('input-border-color');
                 this.btnDownload = document.getElementById('btn-download');
-                
                 this.inputActiveScale = document.getElementById('input-active-scale');
 
                 // 绑定上传事件
@@ -576,16 +578,19 @@
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    const base64 = e.target.result;
                     const img = new Image();
                     img.onload = () => {
                         if (type === 'A') {
                             LayerManager.state.imageA = img;
-                            document.getElementById('img-preview-a').src = e.target.result;
+                            LayerManager.state.imageASrc = base64;
+                            document.getElementById('img-preview-a').src = base64;
                             document.getElementById('preview-container-a').classList.remove('hidden');
                             document.getElementById('placeholder-a').classList.add('hidden');
                         } else {
                             LayerManager.state.imageB = img;
-                            document.getElementById('img-preview-b').src = e.target.result;
+                            LayerManager.state.imageBSrc = base64;
+                            document.getElementById('img-preview-b').src = base64;
                             document.getElementById('preview-container-b').classList.remove('hidden');
                             document.getElementById('placeholder-b').classList.add('hidden');
                         }
@@ -596,7 +601,7 @@
                         Renderer.syncToDOM();
                         Storage.autoSave();
                     };
-                    img.src = e.target.result;
+                    img.src = base64;
                 };
                 reader.readAsDataURL(file);
             },
@@ -608,10 +613,10 @@
         };
 
         // ----------------------------------------------------
-        // 4. GestureManager (高阶双手势交互模块 - 九宫格联动)
+        // 4. GestureManager (多端手势交互模块 - 增加九宫格对齐)
         // ----------------------------------------------------
         const GestureManager = {
-            activeLayer: 'topBg', // 当前操控层
+            activeLayer: 'topBg', 
             startX: 0,
             startY: 0,
             initialOffset: { x: 50, y: 50 },
@@ -626,7 +631,6 @@
             setActiveLayer(layer) {
                 this.activeLayer = layer;
                 
-                // 1. 同步卡片高亮
                 ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
                     const tab = document.getElementById(`tab-${l}`);
                     if (l === layer) {
@@ -636,7 +640,6 @@
                     }
                 });
 
-                // 2. 更新指示文字
                 const transMap = {
                     'topBg': '上背景 (图A)',
                     'topFg': '上嵌套 (图B)',
@@ -645,7 +648,6 @@
                 };
                 document.getElementById('active-layer-indicator').textContent = transMap[layer];
 
-                // 3. 将对应缩放系数映射至进度条
                 let scaleVal = 1.0;
                 if (layer === 'topBg') scaleVal = LayerManager.state.scaleTopBg;
                 else if (layer === 'topFg') scaleVal = LayerManager.state.scaleTopFg;
@@ -670,9 +672,7 @@
                 else if (this.activeLayer === 'bottomFg') document.getElementById('center-box-bottom').classList.add('drag-highlight');
             },
 
-            // 显示当前被控制图层的九宫格线
             showActiveGrid(active) {
-                // 清理全场
                 ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
                     const grid = document.getElementById(`grid-${l}`);
                     if (grid) grid.classList.remove('active');
@@ -695,7 +695,7 @@
                     if (e.cancelable) e.preventDefault();
                     this.setActiveLayer(targetLayer);
                     this.isDragging = true;
-                    this.showActiveGrid(true); // 唤醒九宫格
+                    this.showActiveGrid(true); 
 
                     const touches = e.touches;
                     if (touches && touches.length === 2) {
@@ -722,7 +722,6 @@
                     if (e.cancelable) e.preventDefault();
 
                     const touches = e.touches;
-                    // 处理双指触碰缩放
                     if (touches && touches.length === 2) {
                         const dist = this.getTouchDistance(touches);
                         if (this.startDistance > 0) {
@@ -740,7 +739,6 @@
                         return;
                     }
 
-                    // 处理平移对齐 (精密算法保证图片边缘无缝跟手)
                     const pt = touches ? touches[0] : e;
                     const dx = pt.clientX - this.startX;
                     const dy = pt.clientY - this.startY;
@@ -778,12 +776,11 @@
                 const onEnd = () => {
                     if (this.isDragging) {
                         this.isDragging = false;
-                        this.showActiveGrid(false); // 隐藏九宫格
+                        this.showActiveGrid(false); 
                         Storage.autoSave();
                     }
                 };
 
-                // PC滚轮缩放支持
                 const onWheel = (e, layer) => {
                     e.preventDefault();
                     this.setActiveLayer(layer);
@@ -799,7 +796,6 @@
                     Storage.autoSave();
                 };
 
-                // 绑定上半大背景
                 const topBg = document.getElementById('part-top-bg');
                 topBg.addEventListener('mousedown', (e) => {
                     if (e.target === topBg || e.target.id === 'stage-top-bg-img') onStart(e, 'topBg');
@@ -809,7 +805,6 @@
                 }, {passive: false});
                 topBg.addEventListener('wheel', (e) => onWheel(e, 'topBg'), {passive: false});
 
-                // 绑定下半大背景
                 const bottomBg = document.getElementById('part-bottom-bg');
                 bottomBg.addEventListener('mousedown', (e) => {
                     if (e.target === bottomBg || e.target.id === 'stage-bottom-bg-img') onStart(e, 'bottomBg');
@@ -819,19 +814,16 @@
                 }, {passive: false});
                 bottomBg.addEventListener('wheel', (e) => onWheel(e, 'bottomBg'), {passive: false});
 
-                // 绑定中心嵌套盒 top
                 const boxTop = document.getElementById('center-box-top');
                 boxTop.addEventListener('mousedown', (e) => onStart(e, 'topFg'));
                 boxTop.addEventListener('touchstart', (e) => onStart(e, 'topFg'), {passive: false});
                 boxTop.addEventListener('wheel', (e) => onWheel(e, 'topFg'), {passive: false});
 
-                // 绑定中心嵌套盒 bottom
                 const boxBottom = document.getElementById('center-box-bottom');
                 boxBottom.addEventListener('mousedown', (e) => onStart(e, 'bottomFg'));
                 boxBottom.addEventListener('touchstart', (e) => onStart(e, 'bottomFg'), {passive: false});
                 boxBottom.addEventListener('wheel', (e) => onWheel(e, 'bottomFg'), {passive: false});
 
-                // 挂载全局监听
                 window.addEventListener('mousemove', onMove);
                 window.addEventListener('touchmove', onMove, {passive: false});
                 window.addEventListener('mouseup', onEnd);
@@ -840,7 +832,7 @@
         };
 
         // ----------------------------------------------------
-        // 5. Renderer (实时视图同步渲染器)
+        // 5. Renderer (增加 data-src-track 防刷拦截)
         // ----------------------------------------------------
         const Renderer = {
             syncToDOM() {
@@ -848,7 +840,6 @@
                 const currentWidth = parseFloat(UI.workspace.style.width || 320);
                 const boxSize = currentWidth * (state.centerSize / 100);
 
-                // 1. 设置中心卡片大小与圆角、边框属性
                 [document.getElementById('center-box-top'), document.getElementById('center-box-bottom')].forEach(box => {
                     box.style.width = `${boxSize}px`;
                     box.style.height = `${boxSize}px`;
@@ -857,31 +848,43 @@
                     box.style.borderColor = state.borderColor;
                 });
 
-                // 2. 将图片与矩阵效果刷到 DOM 节点上
-                if (state.imageA) {
+                // 【重构重点 ★★★★★】阻断高频 .src 赋值：只在图片真正更新时设置 src 属性
+                if (state.imageASrc) {
                     const topBgImg = document.getElementById('stage-top-bg-img');
-                    topBgImg.src = document.getElementById('img-preview-a').src;
-                    topBgImg.classList.add('opacity-100');
+                    if (topBgImg.getAttribute('data-src-track') !== state.imageASrc) {
+                        topBgImg.src = state.imageASrc;
+                        topBgImg.setAttribute('data-src-track', state.imageASrc);
+                        topBgImg.classList.add('opacity-100');
+                    }
                     topBgImg.style.objectPosition = `${state.offsetTopBg.x}% ${state.offsetTopBg.y}%`;
                     topBgImg.style.transform = `scale(${state.scaleTopBg})`;
 
                     const bottomFgImg = document.getElementById('stage-bottom-fg-img');
-                    bottomFgImg.src = document.getElementById('img-preview-a').src;
-                    bottomFgImg.classList.add('opacity-100');
+                    if (bottomFgImg.getAttribute('data-src-track') !== state.imageASrc) {
+                        bottomFgImg.src = state.imageASrc;
+                        bottomFgImg.setAttribute('data-src-track', state.imageASrc);
+                        bottomFgImg.classList.add('opacity-100');
+                    }
                     bottomFgImg.style.objectPosition = `${state.offsetBottomFg.x}% ${state.offsetBottomFg.y}%`;
                     bottomFgImg.style.transform = `scale(${state.scaleBottomFg})`;
                 }
 
-                if (state.imageB) {
+                if (state.imageBSrc) {
                     const bottomBgImg = document.getElementById('stage-bottom-bg-img');
-                    bottomBgImg.src = document.getElementById('img-preview-b').src;
-                    bottomBgImg.classList.add('opacity-100');
+                    if (bottomBgImg.getAttribute('data-src-track') !== state.imageBSrc) {
+                        bottomBgImg.src = state.imageBSrc;
+                        bottomBgImg.setAttribute('data-src-track', state.imageBSrc);
+                        bottomBgImg.classList.add('opacity-100');
+                    }
                     bottomBgImg.style.objectPosition = `${state.offsetBottomBg.x}% ${state.offsetBottomBg.y}%`;
                     bottomBgImg.style.transform = `scale(${state.scaleBottomBg})`;
 
                     const topFgImg = document.getElementById('stage-top-fg-img');
-                    topFgImg.src = document.getElementById('img-preview-b').src;
-                    topFgImg.classList.add('opacity-100');
+                    if (topFgImg.getAttribute('data-src-track') !== state.imageBSrc) {
+                        topFgImg.src = state.imageBSrc;
+                        topFgImg.setAttribute('data-src-track', state.imageBSrc);
+                        topFgImg.classList.add('opacity-100');
+                    }
                     topFgImg.style.objectPosition = `${state.offsetTopFg.x}% ${state.offsetTopFg.y}%`;
                     topFgImg.style.transform = `scale(${state.scaleTopFg})`;
                 }
@@ -889,7 +892,7 @@
         };
 
         // ----------------------------------------------------
-        // 6. ExportEngine (防黑防白大图渲染与显存强制自释放引擎)
+        // 6. ExportEngine (彻底分离 Clip 嵌套、重写 Canvas 状态重置)
         // ----------------------------------------------------
         const ExportEngine = {
             async generate() {
@@ -904,7 +907,7 @@
                 }
 
                 const origHTML = UI.btnDownload.innerHTML;
-                UI.btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清重写无损中...</span>`;
+                UI.btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清重组像素中...</span>`;
                 lucide.createIcons();
 
                 let outW = 1600;
@@ -918,19 +921,22 @@
                     outH = 2560;
                 }
 
+                // 【重构重点 ★★★★☆】Canvas 强力初始化清除机制，不复用旧状态
                 const canvas = document.getElementById('export-canvas');
                 canvas.width = outW;
                 canvas.height = outH;
                 const ctx = canvas.getContext('2d');
+                if (ctx.resetTransform) {
+                    ctx.resetTransform();
+                } else {
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 const midY = outH / 2;
 
-                const drawLayerToCanvas = (img, x, y, w, h, offset, scale) => {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(x, y, w, h);
-                    ctx.clip(); 
-
+                // 原子化渲染辅助器 (不含有任何内部 Clip 操作，杜绝多层 Clip 锁死)
+                const drawImageLayer = (img, x, y, w, h, offset, scale) => {
                     const imgRatio = img.width / img.height;
                     const destRatio = w / h;
                     let drawW, drawH, drawX, drawY;
@@ -947,77 +953,99 @@
                     drawY = y + (h - drawH) * (offset.y / 100);
 
                     ctx.drawImage(img, drawX, drawY, drawW, drawH);
-                    ctx.restore();
                 };
 
-                // 1. 绘制上半部背景
-                drawLayerToCanvas(state.imageA, 0, 0, outW, midY, state.offsetTopBg, state.scaleTopBg);
+                // 【重构重点 ★★★★★】纯粹、互不干扰的原子化 Clipping 绘制区域
+                // 1. 绘制上半大背景 (原子级闭合 clip)
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(0, 0, outW, midY);
+                ctx.clip();
+                drawImageLayer(state.imageA, 0, 0, outW, midY, state.offsetTopBg, state.scaleTopBg);
+                ctx.restore();
 
-                // 2. 绘制下半部背景
-                drawLayerToCanvas(state.imageB, 0, midY, outW, midY, state.offsetBottomBg, state.scaleBottomBg);
+                // 2. 绘制下半大背景 (原子级闭合 clip)
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(0, midY, outW, midY);
+                ctx.clip();
+                drawImageLayer(state.imageB, 0, midY, outW, midY, state.offsetBottomBg, state.scaleBottomBg);
+                ctx.restore();
 
-                // 3. 计算中心嵌套尺寸与边框大小
+                // 3. 准备嵌套中心卡片数据
                 const boxSize = outW * (state.centerSize / 100);
                 const radiusPx = state.radius * (outW / 320); 
                 const borderPx = state.borderWidth * (outW / 320); 
 
-                // 绘制上半嵌套 (图B)
-                ctx.save();
+                // 4. 绘制上中心嵌套框
                 const topBoxX = outW / 2 - boxSize / 2;
                 const topBoxY = midY / 2 - boxSize / 2;
 
+                // A. 绘制卡座阴影
+                ctx.save();
                 ctx.shadowColor = 'rgba(139, 115, 85, 0.25)';
                 ctx.shadowBlur = 40 * (outW / 1200);
                 ctx.shadowOffsetY = 10 * (outW / 1200);
-
                 ctx.fillStyle = '#FFFFFF';
-                ExportEngine.drawRoundedRect(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                ctx.beginPath();
+                ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                 ctx.fill();
+                ctx.restore();
 
-                ctx.shadowColor = 'transparent'; 
+                // B. 绘制框内图片 (Clipped to Top Nested Box)
+                ctx.save();
+                ctx.beginPath();
+                ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                 ctx.clip();
+                drawImageLayer(state.imageB, topBoxX, topBoxY, boxSize, boxSize, state.offsetTopFg, state.scaleTopFg);
+                ctx.restore();
 
-                drawLayerToCanvas(state.imageB, topBoxX, topBoxY, boxSize, boxSize, state.offsetTopFg, state.scaleTopFg);
-                
+                // C. 在干净的环境上层绘制描边 (Unclipped，防止半个 Stroke 丢失)
                 if (borderPx > 0) {
-                    ctx.restore(); 
                     ctx.save();
                     ctx.strokeStyle = state.borderColor;
                     ctx.lineWidth = borderPx;
-                    ExportEngine.drawRoundedRect(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                    ctx.beginPath();
+                    ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                     ctx.stroke();
+                    ctx.restore();
                 }
-                ctx.restore();
 
-                // 绘制下半嵌套 (图A)
-                ctx.save();
+                // 5. 绘制下中心嵌套框
                 const bottomBoxX = outW / 2 - boxSize / 2;
                 const bottomBoxY = midY + (midY / 2) - boxSize / 2;
 
+                // A. 绘制卡座阴影
+                ctx.save();
                 ctx.shadowColor = 'rgba(139, 115, 85, 0.25)';
                 ctx.shadowBlur = 40 * (outW / 1200);
                 ctx.shadowOffsetY = 10 * (outW / 1200);
-
                 ctx.fillStyle = '#FFFFFF';
-                ExportEngine.drawRoundedRect(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                ctx.beginPath();
+                ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                 ctx.fill();
+                ctx.restore();
 
-                ctx.shadowColor = 'transparent';
+                // B. 绘制框内图片 (Clipped to Bottom Nested Box)
+                ctx.save();
+                ctx.beginPath();
+                ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                 ctx.clip();
+                drawImageLayer(state.imageA, bottomBoxX, bottomBoxY, boxSize, boxSize, state.offsetBottomFg, state.scaleBottomFg);
+                ctx.restore();
 
-                drawLayerToCanvas(state.imageA, bottomBoxX, bottomBoxY, boxSize, boxSize, state.offsetBottomFg, state.scaleBottomFg);
-                
+                // C. 绘制上层描边
                 if (borderPx > 0) {
-                    ctx.restore(); 
                     ctx.save();
                     ctx.strokeStyle = state.borderColor;
                     ctx.lineWidth = borderPx;
-                    ExportEngine.drawRoundedRect(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                    ctx.beginPath();
+                    ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                     ctx.stroke();
+                    ctx.restore();
                 }
-                ctx.restore();
 
-                // 4. 叠加胶片颗粒
+                // 6. 叠加胶片颗粒
                 if (state.grainOpacity > 0) {
                     ctx.save();
                     ctx.fillStyle = `rgba(255, 255, 255, ${state.grainOpacity / 1.5})`;
@@ -1031,7 +1059,7 @@
                     ctx.restore();
                 }
 
-                // 5. 导出并呼出下载弹层，同时强行彻底清空 Canvas 显存，防止出现“第三次黑图”
+                // 7. 导出至用户端
                 setTimeout(() => {
                     try {
                         const dataURL = canvas.toDataURL('image/png');
@@ -1042,7 +1070,7 @@
                             document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                         } else {
                             const link = document.createElement('a');
-                            link.download = `riyad_inverse_v3_3_${Date.now()}.png`;
+                            link.download = `riyad_inverse_perfect_${Date.now()}.png`;
                             link.href = dataURL;
                             document.body.appendChild(link);
                             link.click();
@@ -1053,7 +1081,7 @@
                         document.getElementById('modal-download-img').src = dataURL;
                         document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                     } finally {
-                        // 【硬核安全保护】生成图片后，彻底抹除和销毁 Canvas 临时占用的所有 GPU 显存资源！
+                        // 彻底置空宽高释放物理内存
                         canvas.width = 0;
                         canvas.height = 0;
                         
@@ -1063,12 +1091,11 @@
                 }, 400);
             },
 
-            drawRoundedRect(ctx, x, y, width, height, radius) {
+            drawRoundedPath(ctx, x, y, width, height, radius) {
                 if (radius === 0) {
                     ctx.rect(x, y, width, height);
                     return;
                 }
-                ctx.beginPath();
                 ctx.moveTo(x + radius, y);
                 ctx.lineTo(x + width - radius, y);
                 ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
@@ -1083,11 +1110,10 @@
         };
 
         // ----------------------------------------------------
-        // 7. Storage (配置草稿自动安全存储 - 剥离失效图片文件指针)
+        // 7. Storage (配置草稿自动安全存储 - 纯逻辑参数持久化)
         // ----------------------------------------------------
         const Storage = {
             autoSave() {
-                // 安全机制：只存储用户的微调参数，彻底不存储已过期的 Blob 文件 URL
                 const config = {
                     ratio: LayerManager.state.ratio,
                     centerSize: LayerManager.state.centerSize,
@@ -1112,7 +1138,6 @@
                 if (!raw) return;
                 try {
                     const parsed = JSON.parse(raw);
-                    // 安全混入参数
                     Object.assign(LayerManager.state, parsed);
                     
                     UI.inputCenterSize.value = LayerManager.state.centerSize;
