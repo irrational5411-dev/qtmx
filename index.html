@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad 互换嵌套美学排版生成器 V3.3</title>
+    <title>Riyad 互换嵌套美学排版生成器 V4</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -19,14 +19,7 @@
             touch-action: none; /* 完美接管手势 */
         }
 
-        /* 奶油感温润卡片阴影 */
-        .cream-card {
-            background-color: #FFFFFF;
-            border: 1px solid #EFEAE2;
-            box-shadow: 0 10px 30px -5px rgba(139, 115, 85, 0.08);
-            border-radius: 20px;
-        }
-
+        /* 奶油感按钮微动效 */
         .cream-button {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -34,39 +27,8 @@
             transform: scale(0.96);
         }
 
-        /* 胶片颗粒 */
-        .grain-overlay {
-            position: relative;
-        }
-        .grain-overlay::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
-            pointer-events: none;
-            mix-blend-mode: overlay;
-            z-index: 5;
-            opacity: 0.06;
-        }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* 拖拽高亮标志 */
-        .drag-highlight {
-            box-shadow: 0 0 0 3px #8B7355 !important;
-        }
-
-        /* 九宫格辅助线样式 */
-        .thirds-grid {
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 20;
-        }
-        .thirds-grid.active {
-            opacity: 1;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col lg:flex-row overflow-hidden select-none">
@@ -77,17 +39,17 @@
             <span class="p-1.5 bg-[#8B7355] rounded-lg text-white">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.3</span>
+            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v4.0</span>
         </div>
-        <button onclick="LayerManager.loadSampleAssets()" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
+        <button id="btn-sample-assets" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
             <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
             <span>美学样图</span>
         </button>
     </header>
 
-    <!-- 1. UI 模块 (主画幅区域) -->
+    <!-- 2. 主预览画幅舞台 (完全由 Canvas 驱动，所见即所得) -->
     <div class="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden min-h-0">
-        <!-- 氛围光晕 -->
+        <!-- 氛围装饰光晕 -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
             <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
             <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] blur-[100px] bottom-1/4 right-1/4"></div>
@@ -108,66 +70,12 @@
                 </div>
             </div>
 
-            <!-- 双层平分排版舞台 -->
-            <div id="preview-stage" class="relative w-full h-full flex flex-col overflow-hidden grain-overlay">
-                
-                <!-- 上半容器 (50%) -->
-                <div class="relative w-full h-1/2 overflow-hidden border-b border-black/10 cursor-move" id="part-top-bg">
-                    <img id="stage-top-bg-img" src="" class="absolute w-full h-full object-cover select-none pointer-events-none opacity-0 origin-center">
-                    
-                    <!-- 上背景九宫格辅助线 -->
-                    <div id="grid-topBg" class="thirds-grid absolute inset-0">
-                        <div class="absolute inset-y-0 left-1/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                        <div class="absolute inset-y-0 left-2/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                        <div class="absolute inset-x-0 top-1/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                        <div class="absolute inset-x-0 top-2/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                    </div>
-
-                    <!-- 上中心嵌套框 -->
-                    <div id="center-box-top" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-[0_4px_25px_rgba(139,115,85,0.2)] overflow-hidden cursor-move border border-white/10" style="width: 112px; height: 112px;">
-                        <img id="stage-top-fg-img" src="" class="absolute w-full h-full object-cover select-none pointer-events-none opacity-0 origin-center">
-                        
-                        <!-- 上中心九宫格辅助线 -->
-                        <div id="grid-topFg" class="thirds-grid absolute inset-0">
-                            <div class="absolute inset-y-0 left-1/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                            <div class="absolute inset-y-0 left-2/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                            <div class="absolute inset-x-0 top-1/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                            <div class="absolute inset-x-0 top-2/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 下半容器 (50%) -->
-                <div class="relative w-full h-1/2 overflow-hidden cursor-move" id="part-bottom-bg">
-                    <img id="stage-bottom-bg-img" src="" class="absolute w-full h-full object-cover select-none pointer-events-none opacity-0 origin-center">
-                    
-                    <!-- 下背景九宫格辅助线 -->
-                    <div id="grid-bottomBg" class="thirds-grid absolute inset-0">
-                        <div class="absolute inset-y-0 left-1/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                        <div class="absolute inset-y-0 left-2/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                        <div class="absolute inset-x-0 top-1/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                        <div class="absolute inset-x-0 top-2/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                    </div>
-
-                    <!-- 下中心嵌套框 -->
-                    <div id="center-box-bottom" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-[0_4px_25px_rgba(139,115,85,0.2)] overflow-hidden cursor-move border border-white/10" style="width: 112px; height: 112px;">
-                        <img id="stage-bottom-fg-img" src="" class="absolute w-full h-full object-cover select-none pointer-events-none opacity-0 origin-center">
-                        
-                        <!-- 下中心九宫格辅助线 -->
-                        <div id="grid-bottomFg" class="thirds-grid absolute inset-0">
-                            <div class="absolute inset-y-0 left-1/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                            <div class="absolute inset-y-0 left-2/3 w-[0.5px] border-l border-dashed border-white/60"></div>
-                            <div class="absolute inset-x-0 top-1/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                            <div class="absolute inset-x-0 top-2/3 h-[0.5px] border-t border-dashed border-white/60"></div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            <!-- 实时预览 Canvas：所有绘制与导出 100% 共享 SceneRenderer 逻辑 -->
+            <canvas id="preview-canvas" class="w-full h-full cursor-move border-0 block"></canvas>
         </div>
     </div>
 
-    <!-- 1. UI 模块 (控制面板) -->
+    <!-- 3. UI 模块 (控制面板) -->
     <div class="w-full lg:w-[380px] bg-white border-t lg:border-t-0 lg:border-r border-[#EFEAE2] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto max-h-[55vh] lg:max-h-screen lg:h-screen no-scrollbar z-30 shadow-[0_-10px_30px_rgba(139,115,85,0.05)] lg:shadow-none pb-8" style="touch-action: pan-y;">
         
         <!-- 侧栏头部 -->
@@ -176,7 +84,7 @@
                 <span class="p-1.5 bg-[#8B7355] rounded-xl text-white">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </span>
-                <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v3.3</span>
+                <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v4.0</span>
             </div>
             <p class="text-[11px] text-zinc-400">“你中有我，我中有你” 镜像互换排版工具</p>
             <hr class="border-[#EFEAE2] mt-4">
@@ -192,7 +100,7 @@
                     <input type="file" id="upload-a" accept="image/*" class="hidden">
                     <label for="upload-a" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
                         <div id="preview-container-a" class="absolute inset-0 w-full h-full hidden">
-                            <img id="img-preview-a" class="w-full h-full object-cover">
+                            <img id="img-thumb-a" class="w-full h-full object-cover">
                         </div>
                         <div id="placeholder-a" class="flex flex-col items-center justify-center text-center p-1">
                             <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
@@ -205,7 +113,7 @@
                     <input type="file" id="upload-b" accept="image/*" class="hidden">
                     <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
                         <div id="preview-container-b" class="absolute inset-0 w-full h-full hidden">
-                            <img id="img-preview-b" class="w-full h-full object-cover">
+                            <img id="img-thumb-b" class="w-full h-full object-cover">
                         </div>
                         <div id="placeholder-b" class="flex flex-col items-center justify-center text-center p-1">
                             <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
@@ -222,9 +130,9 @@
                 <i data-lucide="aspect-ratio" class="w-3.5 h-3.5"></i> 2. 整体画幅比例
             </span>
             <div class="grid grid-cols-3 gap-1.5">
-                <button onclick="LayerManager.setRatio('1-1')" id="btn-ratio-1-1" class="py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm">1:1 正方形</button>
-                <button onclick="LayerManager.setRatio('3-4')" id="btn-ratio-3-4" class="py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4 小红书</button>
-                <button onclick="LayerManager.setRatio('9-16')" id="btn-ratio-9-16" class="py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">9:16 长图</button>
+                <button id="btn-ratio-1-1" data-ratio="1-1" class="btn-ratio py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm">1:1 正方形</button>
+                <button id="btn-ratio-3-4" data-ratio="3-4" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4 小红书</button>
+                <button id="btn-ratio-9-16" data-ratio="9-16" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">9:16 长图</button>
             </div>
         </div>
 
@@ -255,9 +163,9 @@
                 <div class="flex items-center justify-between border-t border-[#EFEAE2]/60 pt-2">
                     <span class="text-[11px] text-[#4A3E3D] font-medium">嵌套边框颜色</span>
                     <div class="flex items-center gap-1.5">
-                        <button onclick="LayerManager.setBorderColor('#FFFFFF')" class="w-4 h-4 rounded-full border border-zinc-300 bg-white" title="奶白色"></button>
-                        <button onclick="LayerManager.setBorderColor('#FAF6F0')" class="w-4 h-4 rounded-full border border-zinc-300 bg-[#FAF6F0]" title="米乳色"></button>
-                        <button onclick="LayerManager.setBorderColor('#4A3E3D')" class="w-4 h-4 rounded-full border border-zinc-300 bg-[#4A3E3D]" title="深焦糖"></button>
+                        <button id="btn-color-white" data-color="#FFFFFF" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-white" title="奶白色"></button>
+                        <button id="btn-color-cream" data-color="#FAF6F0" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#FAF6F0]" title="米乳色"></button>
+                        <button id="btn-color-caramel" data-color="#4A3E3D" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#4A3E3D]" title="深焦糖"></button>
                         <input type="color" id="input-border-color" value="#FFFFFF" class="w-5 h-5 rounded border-0 cursor-pointer bg-transparent">
                     </div>
                 </div>
@@ -273,10 +181,10 @@
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2 mt-1">
-                    <button onclick="GestureManager.setActiveLayer('topBg')" id="tab-topBg" class="py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all">上背景</button>
-                    <button onclick="GestureManager.setActiveLayer('topFg')" id="tab-topFg" class="py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">上嵌套</button>
-                    <button onclick="GestureManager.setActiveLayer('bottomBg')" id="tab-bottomBg" class="py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下背景</button>
-                    <button onclick="GestureManager.setActiveLayer('bottomFg')" id="tab-bottomFg" class="py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下嵌套</button>
+                    <button id="tab-topBg" data-layer="topBg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all">上背景</button>
+                    <button id="tab-topFg" data-layer="topFg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">上嵌套</button>
+                    <button id="tab-bottomBg" data-layer="bottomBg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下背景</button>
+                    <button id="tab-bottomFg" data-layer="bottomFg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下嵌套</button>
                 </div>
 
                 <!-- 选定图层的独立拉杆 -->
@@ -316,20 +224,16 @@
             </button>
         </div>
 
-        <!-- 1. UI 模块 (手机端防滑挡奶油风插图) -->
+        <!-- 手绘奶油插图垫底 -->
         <div class="mt-4 flex flex-col items-center justify-center gap-2 py-4 border-t border-[#FAF1E6] shrink-0 pb-16">
             <svg class="w-40 h-16 text-[#8B7355]/30 fill-current opacity-80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
-                <!-- 奶油云 A -->
                 <path d="M 25,50 C 25,40 35,35 45,40 C 50,30 65,30 70,40 C 80,40 85,48 75,55 C 75,55 25,55 25,50 Z" />
-                <!-- 奶油云 B -->
                 <path d="M 125,45 C 125,37 133,32 143,37 C 148,27 163,27 168,37 C 178,37 183,45 173,52 C 173,52 125,52 125,45 Z" />
-                <!-- 治愈咖啡杯 -->
                 <rect x="92" y="42" width="18" height="15" rx="3" />
                 <path d="M 110,45 C 114,45 114,51 110,51" stroke-width="2.5" fill="none" stroke-linecap="round" />
                 <line x1="96" y1="36" x2="98" y2="39" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="101" y1="35" x2="101" y2="38" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
-                <!-- 地平底座线 -->
                 <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
             </svg>
             <span class="text-[10px] text-[#8B7355]/60 tracking-wider">Design Inspired by Riyad</span>
@@ -337,12 +241,12 @@
 
     </div>
 
-    <!-- 隐藏式 Canvas 渲染底板 -->
+    <!-- 隐藏式高清导出 Canvas -->
     <canvas id="export-canvas" class="hidden"></canvas>
 
-    <!-- 手机长按保存美观悬浮窗 -->
+    <!-- 手机端长按保存弹窗 -->
     <div id="mobile-download-modal" class="fixed inset-0 bg-black/85 z-50 flex flex-col items-center justify-center p-6 transition-all duration-300 opacity-0 pointer-events-none">
-        <button onclick="UI.closeDownloadModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-white bg-zinc-800/80 p-2.5 rounded-full cream-button">
+        <button id="btn-close-modal" class="absolute top-6 right-6 text-zinc-400 hover:text-white bg-zinc-800/80 p-2.5 rounded-full cream-button">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
         <div class="text-center max-w-sm flex flex-col items-center gap-4">
@@ -351,7 +255,7 @@
             </div>
             <div>
                 <h3 class="text-base font-bold text-white">长按下方图片保存至相册</h3>
-                <p class="text-xs text-zinc-400 mt-1">100% 解决黑白屏问题。如果长按无反应，请点击右上角在浏览器中打开本页。</p>
+                <p class="text-xs text-zinc-400 mt-1">100% 解决错位白屏问题。如果长按无反应，请在系统浏览器中打开本页。</p>
             </div>
             <div class="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl max-h-[55vh] max-w-full">
                 <img id="modal-download-img" class="w-auto h-auto max-h-[50vh] mx-auto object-contain select-all" src="" alt="长按保存图片">
@@ -364,579 +268,44 @@
 
     <script>
         // ----------------------------------------------------
-        // 1. Theme (主题配置与噪点强度控制)
+        // 1. Single Source of Truth: 统一的数据状态模型 (state)
         // ----------------------------------------------------
-        const Theme = {
-            init() {
-                const sheet = document.styleSheets[0];
-                const rules = sheet.cssRules || sheet.rules;
-                this.grainRule = Array.from(rules).find(r => r.selectorText === '.grain-overlay::after');
-            },
-            setGrainOpacity(val) {
-                if (this.grainRule) {
-                    this.grainRule.style.opacity = val;
-                }
+        const state = {
+            imageA: null, // HTMLImageElement
+            imageB: null, // HTMLImageElement
+            ratio: '1-1', 
+            centerSize: 35, // Percentage 20 - 60
+            radius: 0, 
+            grainOpacity: 0.06, 
+            borderWidth: 1, 
+            borderColor: '#FFFFFF',
+            activeLayer: 'topBg', // 'topBg' | 'topFg' | 'bottomBg' | 'bottomFg'
+
+            // 图层标准字典映射 (精简数组化/字典化抽象)
+            layers: {
+                topBg:    { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 },
+                topFg:    { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
+                bottomBg: { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
+                bottomFg: { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 }
             }
         };
 
         // ----------------------------------------------------
-        // 2. LayerManager (图层属性状态集中管理 - 彻底统一 DataURL 为唯一 Truth)
+        // 2. SceneRenderer (唯一的核心绘制引擎：预览与导出共用!)
         // ----------------------------------------------------
-        const LayerManager = {
-            state: {
-                imageA: null, // HTMLImageElement
-                imageB: null, // HTMLImageElement
-                imageASrc: "", // Base64 唯一数据源
-                imageBSrc: "", // Base64 唯一数据源
-                
-                ratio: '1-1', 
-                centerSize: 35, 
-                radius: 0, 
-                grainOpacity: 0.06, 
-                
-                borderWidth: 1, 
-                borderColor: '#FFFFFF', 
-
-                offsetTopBg: { x: 50, y: 50 },
-                offsetTopFg: { x: 50, y: 50 },
-                offsetBottomBg: { x: 50, y: 50 },
-                offsetBottomFg: { x: 50, y: 50 },
-
-                scaleTopBg: 1.0,
-                scaleTopFg: 1.0,
-                scaleBottomBg: 1.0,
-                scaleBottomFg: 1.0
-            },
-
-            setRatio(ratio) {
-                this.state.ratio = ratio;
-                UI.adaptWorkspaceScale();
-                
-                ['1-1', '3-4', '9-16'].forEach(r => {
-                    const btn = document.getElementById(`btn-ratio-${r}`);
-                    if (r === ratio) {
-                        btn.className = "py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm";
-                    } else {
-                        btn.className = "py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button";
-                    }
-                });
-                Renderer.syncToDOM();
-                Storage.autoSave();
-            },
-
-            setBorderColor(color) {
-                this.state.borderColor = color;
-                document.getElementById('input-border-color').value = color;
-                Renderer.syncToDOM();
-                Storage.autoSave();
-            },
-
-            loadSampleAssets() {
-                const workspacePlaceholder = document.getElementById('workspace-placeholder');
-                workspacePlaceholder.querySelector('h3').textContent = "正在调配精美摄影图...";
-                
-                const sampleA = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80"; // 焦点人像
-                const sampleB = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"; // 纯净海滩
-
-                let loaded = 0;
-                const checkAndRun = () => {
-                    loaded++;
-                    if (loaded === 2) {
-                        workspacePlaceholder.classList.add('opacity-0', 'pointer-events-none');
-                        Renderer.syncToDOM();
-                        Storage.autoSave();
-                    }
-                };
-
-                const imgA = new Image();
-                imgA.crossOrigin = "anonymous";
-                imgA.onload = () => {
-                    this.state.imageA = imgA;
-                    this.state.imageASrc = sampleA;
-                    document.getElementById('img-preview-a').src = sampleA;
-                    document.getElementById('preview-container-a').classList.remove('hidden');
-                    document.getElementById('placeholder-a').classList.add('hidden');
-                    checkAndRun();
-                };
-                imgA.src = sampleA;
-
-                const imgB = new Image();
-                imgB.crossOrigin = "anonymous";
-                imgB.onload = () => {
-                    this.state.imageB = imgB;
-                    this.state.imageBSrc = sampleB;
-                    document.getElementById('img-preview-b').src = sampleB;
-                    document.getElementById('preview-container-b').classList.remove('hidden');
-                    document.getElementById('placeholder-b').classList.add('hidden');
-                    checkAndRun();
-                };
-                imgB.src = sampleB;
-            }
-        };
-
-        // ----------------------------------------------------
-        // 3. UI 交互层管理器
-        // ----------------------------------------------------
-        const UI = {
-            init() {
-                this.workspace = document.getElementById('workspace');
-                this.workspacePlaceholder = document.getElementById('workspace-placeholder');
-                this.inputCenterSize = document.getElementById('input-center-size');
-                this.inputRadius = document.getElementById('input-radius');
-                this.inputGrain = document.getElementById('input-grain');
-                this.inputBorderWidth = document.getElementById('input-border-width');
-                this.inputBorderColor = document.getElementById('input-border-color');
-                this.btnDownload = document.getElementById('btn-download');
-                this.inputActiveScale = document.getElementById('input-active-scale');
-
-                // 绑定上传事件
-                document.getElementById('upload-a').addEventListener('change', (e) => this.handleLocalUpload(e, 'A'));
-                document.getElementById('upload-b').addEventListener('change', (e) => this.handleLocalUpload(e, 'B'));
-
-                // 绑定控制参数
-                this.inputCenterSize.addEventListener('input', (e) => {
-                    LayerManager.state.centerSize = parseInt(e.target.value);
-                    document.getElementById('center-size-val').textContent = LayerManager.state.centerSize + '%';
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                });
-
-                this.inputRadius.addEventListener('input', (e) => {
-                    LayerManager.state.radius = parseInt(e.target.value);
-                    document.getElementById('radius-val').textContent = LayerManager.state.radius + 'px';
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                });
-
-                this.inputGrain.addEventListener('input', (e) => {
-                    const grainVal = parseInt(e.target.value);
-                    LayerManager.state.grainOpacity = grainVal / 100;
-                    document.getElementById('grain-val').textContent = grainVal + '%';
-                    Theme.setGrainOpacity(LayerManager.state.grainOpacity);
-                    Storage.autoSave();
-                });
-
-                this.inputBorderWidth.addEventListener('input', (e) => {
-                    LayerManager.state.borderWidth = parseInt(e.target.value);
-                    document.getElementById('border-width-val').textContent = LayerManager.state.borderWidth + 'px';
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                });
-
-                this.inputBorderColor.addEventListener('input', (e) => {
-                    LayerManager.state.borderColor = e.target.value;
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                });
-
-                // 绑定专属激活图层缩放条
-                this.inputActiveScale.addEventListener('input', (e) => {
-                    const scale = parseFloat(e.target.value);
-                    const layer = GestureManager.activeLayer;
-                    
-                    if (layer === 'topBg') LayerManager.state.scaleTopBg = scale;
-                    else if (layer === 'topFg') LayerManager.state.scaleTopFg = scale;
-                    else if (layer === 'bottomBg') LayerManager.state.scaleBottomBg = scale;
-                    else if (layer === 'bottomFg') LayerManager.state.scaleBottomFg = scale;
-
-                    document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                });
-
-                this.btnDownload.addEventListener('click', ExportEngine.generate);
-            },
-
-            adaptWorkspaceScale() {
-                const container = this.workspace.parentElement;
-                const containerW = container.clientWidth;
-                const containerH = container.clientHeight;
-
-                let targetW = 400;
-                let targetH = 400;
-
-                if (LayerManager.state.ratio === '3-4') {
-                    targetW = 360;
-                    targetH = 480;
-                } else if (LayerManager.state.ratio === '9-16') {
-                    targetW = 320;
-                    targetH = 568;
-                }
-
-                let scale = 1;
-                const scaleX = (containerW - 24) / targetW;
-                const scaleY = (containerH - 24) / targetH;
-                scale = Math.min(scaleX, scaleY, 1);
-
-                this.workspace.style.width = `${targetW * scale}px`;
-                this.workspace.style.height = `${targetH * scale}px`;
-            },
-
-            handleLocalUpload(event, type) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64 = e.target.result;
-                    const img = new Image();
-                    img.onload = () => {
-                        if (type === 'A') {
-                            LayerManager.state.imageA = img;
-                            LayerManager.state.imageASrc = base64;
-                            document.getElementById('img-preview-a').src = base64;
-                            document.getElementById('preview-container-a').classList.remove('hidden');
-                            document.getElementById('placeholder-a').classList.add('hidden');
-                        } else {
-                            LayerManager.state.imageB = img;
-                            LayerManager.state.imageBSrc = base64;
-                            document.getElementById('img-preview-b').src = base64;
-                            document.getElementById('preview-container-b').classList.remove('hidden');
-                            document.getElementById('placeholder-b').classList.add('hidden');
-                        }
-
-                        if (LayerManager.state.imageA && LayerManager.state.imageB) {
-                            this.workspacePlaceholder.classList.add('opacity-0', 'pointer-events-none');
-                        }
-                        Renderer.syncToDOM();
-                        Storage.autoSave();
-                    };
-                    img.src = base64;
-                };
-                reader.readAsDataURL(file);
-            },
-
-            closeDownloadModal() {
-                const modal = document.getElementById('mobile-download-modal');
-                modal.classList.add('opacity-0', 'pointer-events-none');
-            }
-        };
-
-        // ----------------------------------------------------
-        // 4. GestureManager (多端手势交互模块 - 增加九宫格对齐)
-        // ----------------------------------------------------
-        const GestureManager = {
-            activeLayer: 'topBg', 
-            startX: 0,
-            startY: 0,
-            initialOffset: { x: 50, y: 50 },
-            startDistance: 0,
-            initialScale: 1.0,
-            isDragging: false,
-
-            init() {
-                this.setupDOMEvents();
-            },
-
-            setActiveLayer(layer) {
-                this.activeLayer = layer;
-                
-                ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
-                    const tab = document.getElementById(`tab-${l}`);
-                    if (l === layer) {
-                        tab.className = "py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all";
-                    } else {
-                        tab.className = "py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all";
-                    }
-                });
-
-                const transMap = {
-                    'topBg': '上背景 (图A)',
-                    'topFg': '上嵌套 (图B)',
-                    'bottomBg': '下背景 (图B)',
-                    'bottomFg': '下嵌套 (图A)'
-                };
-                document.getElementById('active-layer-indicator').textContent = transMap[layer];
-
-                let scaleVal = 1.0;
-                if (layer === 'topBg') scaleVal = LayerManager.state.scaleTopBg;
-                else if (layer === 'topFg') scaleVal = LayerManager.state.scaleTopFg;
-                else if (layer === 'bottomBg') scaleVal = LayerManager.state.scaleBottomBg;
-                else if (layer === 'bottomFg') scaleVal = LayerManager.state.scaleBottomFg;
-
-                UI.inputActiveScale.value = scaleVal;
-                document.getElementById('active-scale-val').textContent = scaleVal.toFixed(1) + 'x';
-
-                this.highlightWorkspaceBorder();
-            },
-
-            highlightWorkspaceBorder() {
-                document.getElementById('stage-top-bg-img').classList.remove('drag-highlight');
-                document.getElementById('center-box-top').classList.remove('drag-highlight');
-                document.getElementById('stage-bottom-bg-img').classList.remove('drag-highlight');
-                document.getElementById('center-box-bottom').classList.remove('drag-highlight');
-
-                if (this.activeLayer === 'topBg') document.getElementById('stage-top-bg-img').classList.add('drag-highlight');
-                else if (this.activeLayer === 'topFg') document.getElementById('center-box-top').classList.add('drag-highlight');
-                else if (this.activeLayer === 'bottomBg') document.getElementById('stage-bottom-bg-img').classList.add('drag-highlight');
-                else if (this.activeLayer === 'bottomFg') document.getElementById('center-box-bottom').classList.add('drag-highlight');
-            },
-
-            showActiveGrid(active) {
-                ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
-                    const grid = document.getElementById(`grid-${l}`);
-                    if (grid) grid.classList.remove('active');
-                });
-
-                if (active) {
-                    const activeGrid = document.getElementById(`grid-${this.activeLayer}`);
-                    if (activeGrid) activeGrid.classList.add('active');
-                }
-            },
-
-            getTouchDistance(touches) {
-                const dx = touches[0].clientX - touches[1].clientX;
-                const dy = touches[0].clientY - touches[1].clientY;
-                return Math.sqrt(dx * dx + dy * dy);
-            },
-
-            setupDOMEvents() {
-                const onStart = (e, targetLayer) => {
-                    if (e.cancelable) e.preventDefault();
-                    this.setActiveLayer(targetLayer);
-                    this.isDragging = true;
-                    this.showActiveGrid(true); 
-
-                    const touches = e.touches;
-                    if (touches && touches.length === 2) {
-                        this.startDistance = this.getTouchDistance(touches);
-                        if (targetLayer === 'topBg') this.initialScale = LayerManager.state.scaleTopBg;
-                        else if (targetLayer === 'topFg') this.initialScale = LayerManager.state.scaleTopFg;
-                        else if (targetLayer === 'bottomBg') this.initialScale = LayerManager.state.scaleBottomBg;
-                        else if (targetLayer === 'bottomFg') this.initialScale = LayerManager.state.scaleBottomFg;
-                        return;
-                    }
-
-                    const pt = touches ? touches[0] : e;
-                    this.startX = pt.clientX;
-                    this.startY = pt.clientY;
-
-                    if (targetLayer === 'topBg') this.initialOffset = { ...LayerManager.state.offsetTopBg };
-                    else if (targetLayer === 'topFg') this.initialOffset = { ...LayerManager.state.offsetTopFg };
-                    else if (targetLayer === 'bottomBg') this.initialOffset = { ...LayerManager.state.offsetBottomBg };
-                    else if (targetLayer === 'bottomFg') this.initialOffset = { ...LayerManager.state.offsetBottomFg };
-                };
-
-                const onMove = (e) => {
-                    if (!this.isDragging) return;
-                    if (e.cancelable) e.preventDefault();
-
-                    const touches = e.touches;
-                    if (touches && touches.length === 2) {
-                        const dist = this.getTouchDistance(touches);
-                        if (this.startDistance > 0) {
-                            const scale = Math.max(1.0, Math.min(4.0, this.initialScale * (dist / this.startDistance)));
-                            
-                            if (this.activeLayer === 'topBg') LayerManager.state.scaleTopBg = scale;
-                            else if (this.activeLayer === 'topFg') LayerManager.state.scaleTopFg = scale;
-                            else if (this.activeLayer === 'bottomBg') LayerManager.state.scaleBottomBg = scale;
-                            else if (this.activeLayer === 'bottomFg') LayerManager.state.scaleBottomFg = scale;
-
-                            document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
-                            UI.inputActiveScale.value = scale;
-                        }
-                        Renderer.syncToDOM();
-                        return;
-                    }
-
-                    const pt = touches ? touches[0] : e;
-                    const dx = pt.clientX - this.startX;
-                    const dy = pt.clientY - this.startY;
-
-                    const wsW = parseFloat(UI.workspace.style.width || 320);
-                    const scaleFactorW = wsW * 0.8;
-                    const scaleFactorH = wsW * 0.4;
-
-                    let scaleVal = 1.0;
-                    if (this.activeLayer === 'topBg') scaleVal = LayerManager.state.scaleTopBg;
-                    else if (this.activeLayer === 'topFg') scaleVal = LayerManager.state.scaleTopFg;
-                    else if (this.activeLayer === 'bottomBg') scaleVal = LayerManager.state.scaleBottomBg;
-                    else if (this.activeLayer === 'bottomFg') scaleVal = LayerManager.state.scaleBottomFg;
-
-                    const chgX = (dx / scaleFactorW) * 100 / scaleVal;
-                    const chgY = (dy / scaleFactorH) * 100 / scaleVal;
-
-                    if (this.activeLayer === 'topBg') {
-                        LayerManager.state.offsetTopBg.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
-                        LayerManager.state.offsetTopBg.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
-                    } else if (this.activeLayer === 'topFg') {
-                        LayerManager.state.offsetTopFg.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
-                        LayerManager.state.offsetTopFg.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
-                    } else if (this.activeLayer === 'bottomBg') {
-                        LayerManager.state.offsetBottomBg.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
-                        LayerManager.state.offsetBottomBg.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
-                    } else if (this.activeLayer === 'bottomFg') {
-                        LayerManager.state.offsetBottomFg.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
-                        LayerManager.state.offsetBottomFg.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
-                    }
-
-                    Renderer.syncToDOM();
-                };
-
-                const onEnd = () => {
-                    if (this.isDragging) {
-                        this.isDragging = false;
-                        this.showActiveGrid(false); 
-                        Storage.autoSave();
-                    }
-                };
-
-                const onWheel = (e, layer) => {
-                    e.preventDefault();
-                    this.setActiveLayer(layer);
-                    const factor = -e.deltaY * 0.0015;
-                    
-                    if (layer === 'topBg') LayerManager.state.scaleTopBg = Math.max(1.0, Math.min(4.0, LayerManager.state.scaleTopBg + factor));
-                    else if (layer === 'topFg') LayerManager.state.scaleTopFg = Math.max(1.0, Math.min(4.0, LayerManager.state.scaleTopFg + factor));
-                    else if (layer === 'bottomBg') LayerManager.state.scaleBottomBg = Math.max(1.0, Math.min(4.0, LayerManager.state.scaleBottomBg + factor));
-                    else if (layer === 'bottomFg') LayerManager.state.scaleBottomFg = Math.max(1.0, Math.min(4.0, LayerManager.state.scaleBottomFg + factor));
-
-                    this.setActiveLayer(layer);
-                    Renderer.syncToDOM();
-                    Storage.autoSave();
-                };
-
-                const topBg = document.getElementById('part-top-bg');
-                topBg.addEventListener('mousedown', (e) => {
-                    if (e.target === topBg || e.target.id === 'stage-top-bg-img') onStart(e, 'topBg');
-                });
-                topBg.addEventListener('touchstart', (e) => {
-                    if (e.target === topBg || e.target.id === 'stage-top-bg-img') onStart(e, 'topBg');
-                }, {passive: false});
-                topBg.addEventListener('wheel', (e) => onWheel(e, 'topBg'), {passive: false});
-
-                const bottomBg = document.getElementById('part-bottom-bg');
-                bottomBg.addEventListener('mousedown', (e) => {
-                    if (e.target === bottomBg || e.target.id === 'stage-bottom-bg-img') onStart(e, 'bottomBg');
-                });
-                bottomBg.addEventListener('touchstart', (e) => {
-                    if (e.target === bottomBg || e.target.id === 'stage-bottom-bg-img') onStart(e, 'bottomBg');
-                }, {passive: false});
-                bottomBg.addEventListener('wheel', (e) => onWheel(e, 'bottomBg'), {passive: false});
-
-                const boxTop = document.getElementById('center-box-top');
-                boxTop.addEventListener('mousedown', (e) => onStart(e, 'topFg'));
-                boxTop.addEventListener('touchstart', (e) => onStart(e, 'topFg'), {passive: false});
-                boxTop.addEventListener('wheel', (e) => onWheel(e, 'topFg'), {passive: false});
-
-                const boxBottom = document.getElementById('center-box-bottom');
-                boxBottom.addEventListener('mousedown', (e) => onStart(e, 'bottomFg'));
-                boxBottom.addEventListener('touchstart', (e) => onStart(e, 'bottomFg'), {passive: false});
-                boxBottom.addEventListener('wheel', (e) => onWheel(e, 'bottomFg'), {passive: false});
-
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('touchmove', onMove, {passive: false});
-                window.addEventListener('mouseup', onEnd);
-                window.addEventListener('touchend', onEnd);
-            }
-        };
-
-        // ----------------------------------------------------
-        // 5. Renderer (增加 data-src-track 防刷拦截)
-        // ----------------------------------------------------
-        const Renderer = {
-            syncToDOM() {
-                const state = LayerManager.state;
-                const currentWidth = parseFloat(UI.workspace.style.width || 320);
-                const boxSize = currentWidth * (state.centerSize / 100);
-
-                [document.getElementById('center-box-top'), document.getElementById('center-box-bottom')].forEach(box => {
-                    box.style.width = `${boxSize}px`;
-                    box.style.height = `${boxSize}px`;
-                    box.style.borderRadius = `${state.radius}px`;
-                    box.style.borderWidth = `${state.borderWidth}px`;
-                    box.style.borderColor = state.borderColor;
-                });
-
-                // 【重构重点 ★★★★★】阻断高频 .src 赋值：只在图片真正更新时设置 src 属性
-                if (state.imageASrc) {
-                    const topBgImg = document.getElementById('stage-top-bg-img');
-                    if (topBgImg.getAttribute('data-src-track') !== state.imageASrc) {
-                        topBgImg.src = state.imageASrc;
-                        topBgImg.setAttribute('data-src-track', state.imageASrc);
-                        topBgImg.classList.add('opacity-100');
-                    }
-                    topBgImg.style.objectPosition = `${state.offsetTopBg.x}% ${state.offsetTopBg.y}%`;
-                    topBgImg.style.transform = `scale(${state.scaleTopBg})`;
-
-                    const bottomFgImg = document.getElementById('stage-bottom-fg-img');
-                    if (bottomFgImg.getAttribute('data-src-track') !== state.imageASrc) {
-                        bottomFgImg.src = state.imageASrc;
-                        bottomFgImg.setAttribute('data-src-track', state.imageASrc);
-                        bottomFgImg.classList.add('opacity-100');
-                    }
-                    bottomFgImg.style.objectPosition = `${state.offsetBottomFg.x}% ${state.offsetBottomFg.y}%`;
-                    bottomFgImg.style.transform = `scale(${state.scaleBottomFg})`;
-                }
-
-                if (state.imageBSrc) {
-                    const bottomBgImg = document.getElementById('stage-bottom-bg-img');
-                    if (bottomBgImg.getAttribute('data-src-track') !== state.imageBSrc) {
-                        bottomBgImg.src = state.imageBSrc;
-                        bottomBgImg.setAttribute('data-src-track', state.imageBSrc);
-                        bottomBgImg.classList.add('opacity-100');
-                    }
-                    bottomBgImg.style.objectPosition = `${state.offsetBottomBg.x}% ${state.offsetBottomBg.y}%`;
-                    bottomBgImg.style.transform = `scale(${state.scaleBottomBg})`;
-
-                    const topFgImg = document.getElementById('stage-top-fg-img');
-                    if (topFgImg.getAttribute('data-src-track') !== state.imageBSrc) {
-                        topFgImg.src = state.imageBSrc;
-                        topFgImg.setAttribute('data-src-track', state.imageBSrc);
-                        topFgImg.classList.add('opacity-100');
-                    }
-                    topFgImg.style.objectPosition = `${state.offsetTopFg.x}% ${state.offsetTopFg.y}%`;
-                    topFgImg.style.transform = `scale(${state.scaleTopFg})`;
-                }
-            }
-        };
-
-        // ----------------------------------------------------
-        // 6. ExportEngine (彻底分离 Clip 嵌套、重写 Canvas 状态重置)
-        // ----------------------------------------------------
-        const ExportEngine = {
-            async generate() {
-                const state = LayerManager.state;
-                if (!state.imageA || !state.imageB) {
-                    const alertBox = document.createElement('div');
-                    alertBox.className = "fixed top-12 left-1/2 -translate-x-1/2 bg-[#8B7355] text-white font-bold px-6 py-3 rounded-full shadow-xl z-50 transition-all text-xs tracking-wider";
-                    alertBox.textContent = "请先导入图A和图B才可以生成哦！";
-                    document.body.appendChild(alertBox);
-                    setTimeout(() => alertBox.remove(), 2500);
-                    return;
-                }
-
-                const origHTML = UI.btnDownload.innerHTML;
-                UI.btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清重组像素中...</span>`;
-                lucide.createIcons();
-
-                let outW = 1600;
-                let outH = 1600;
-
-                if (state.ratio === '3-4') {
-                    outW = 1600;
-                    outH = 2133;
-                } else if (state.ratio === '9-16') {
-                    outW = 1440;
-                    outH = 2560;
-                }
-
-                // 【重构重点 ★★★★☆】Canvas 强力初始化清除机制，不复用旧状态
-                const canvas = document.getElementById('export-canvas');
-                canvas.width = outW;
-                canvas.height = outH;
-                const ctx = canvas.getContext('2d');
-                if (ctx.resetTransform) {
-                    ctx.resetTransform();
-                } else {
-                    ctx.setTransform(1, 0, 0, 1, 0, 0);
-                }
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const midY = outH / 2;
-
-                // 原子化渲染辅助器 (不含有任何内部 Clip 操作，杜绝多层 Clip 锁死)
-                const drawImageLayer = (img, x, y, w, h, offset, scale) => {
+        const SceneRenderer = {
+            // 核心纯函数：向任意 Canvas 绘制完整的 Riyad 美学画面
+            drawScene(ctx, stateData, width, height, options = { isExport: false, showGrid: false }) {
+                // 重置 Context Transform
+                if (ctx.resetTransform) ctx.resetTransform();
+                else ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, width, height);
+
+                const midY = height / 2;
+
+                // 统一的图片画图平移算法
+                const drawLayerImage = (img, x, y, w, h, offset, scale) => {
+                    if (!img) return;
                     const imgRatio = img.width / img.height;
                     const destRatio = w / h;
                     let drawW, drawH, drawX, drawY;
@@ -955,102 +324,103 @@
                     ctx.drawImage(img, drawX, drawY, drawW, drawH);
                 };
 
-                // 【重构重点 ★★★★★】纯粹、互不干扰的原子化 Clipping 绘制区域
-                // 1. 绘制上半大背景 (原子级闭合 clip)
+                const layers = stateData.layers;
+
+                // 1. 绘制上半部大背景 (Top Background)
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(0, 0, outW, midY);
+                ctx.rect(0, 0, width, midY);
                 ctx.clip();
-                drawImageLayer(state.imageA, 0, 0, outW, midY, state.offsetTopBg, state.scaleTopBg);
+                drawLayerImage(stateData[layers.topBg.imgKey], 0, 0, width, midY, layers.topBg.offset, layers.topBg.scale);
                 ctx.restore();
 
-                // 2. 绘制下半大背景 (原子级闭合 clip)
+                // 2. 绘制下半部大背景 (Bottom Background)
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(0, midY, outW, midY);
+                ctx.rect(0, midY, width, midY);
                 ctx.clip();
-                drawImageLayer(state.imageB, 0, midY, outW, midY, state.offsetBottomBg, state.scaleBottomBg);
+                drawLayerImage(stateData[layers.bottomBg.imgKey], 0, midY, width, midY, layers.bottomBg.offset, layers.bottomBg.scale);
                 ctx.restore();
 
-                // 3. 准备嵌套中心卡片数据
-                const boxSize = outW * (state.centerSize / 100);
-                const radiusPx = state.radius * (outW / 320); 
-                const borderPx = state.borderWidth * (outW / 320); 
+                // 3. 计算中心嵌套卡片几何属性
+                const boxSize = width * (stateData.centerSize / 100);
+                const radiusPx = stateData.radius * (width / 320); 
+                const borderPx = stateData.borderWidth * (width / 320); 
 
-                // 4. 绘制上中心嵌套框
-                const topBoxX = outW / 2 - boxSize / 2;
+                // 4. 绘制上中心嵌套框 (Top Foreground)
+                const topBoxX = width / 2 - boxSize / 2;
                 const topBoxY = midY / 2 - boxSize / 2;
 
-                // A. 绘制卡座阴影
+                // A. 绘制卡座白色底板与软阴影
                 ctx.save();
-                ctx.shadowColor = 'rgba(139, 115, 85, 0.25)';
-                ctx.shadowBlur = 40 * (outW / 1200);
-                ctx.shadowOffsetY = 10 * (outW / 1200);
+                ctx.shadowColor = 'rgba(139, 115, 85, 0.22)';
+                ctx.shadowBlur = 30 * (width / 1200);
+                ctx.shadowOffsetY = 8 * (width / 1200);
                 ctx.fillStyle = '#FFFFFF';
                 ctx.beginPath();
-                ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                 ctx.fill();
                 ctx.restore();
 
-                // B. 绘制框内图片 (Clipped to Top Nested Box)
+                // B. 绘制框内图 (Clip 至上嵌套卡片)
                 ctx.save();
                 ctx.beginPath();
-                ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                 ctx.clip();
-                drawImageLayer(state.imageB, topBoxX, topBoxY, boxSize, boxSize, state.offsetTopFg, state.scaleTopFg);
+                drawLayerImage(stateData[layers.topFg.imgKey], topBoxX, topBoxY, boxSize, boxSize, layers.topFg.offset, layers.topFg.scale);
                 ctx.restore();
 
-                // C. 在干净的环境上层绘制描边 (Unclipped，防止半个 Stroke 丢失)
+                // C. 绘制嵌套边框 (Unclipped)
                 if (borderPx > 0) {
                     ctx.save();
-                    ctx.strokeStyle = state.borderColor;
+                    ctx.strokeStyle = stateData.borderColor;
                     ctx.lineWidth = borderPx;
                     ctx.beginPath();
-                    ExportEngine.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                    this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
                     ctx.stroke();
                     ctx.restore();
                 }
 
-                // 5. 绘制下中心嵌套框
-                const bottomBoxX = outW / 2 - boxSize / 2;
+                // 5. 绘制下中心嵌套框 (Bottom Foreground)
+                const bottomBoxX = width / 2 - boxSize / 2;
                 const bottomBoxY = midY + (midY / 2) - boxSize / 2;
 
-                // A. 绘制卡座阴影
+                // A. 绘制卡座底板阴影
                 ctx.save();
-                ctx.shadowColor = 'rgba(139, 115, 85, 0.25)';
-                ctx.shadowBlur = 40 * (outW / 1200);
-                ctx.shadowOffsetY = 10 * (outW / 1200);
+                ctx.shadowColor = 'rgba(139, 115, 85, 0.22)';
+                ctx.shadowBlur = 30 * (width / 1200);
+                ctx.shadowOffsetY = 8 * (width / 1200);
                 ctx.fillStyle = '#FFFFFF';
                 ctx.beginPath();
-                ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                 ctx.fill();
                 ctx.restore();
 
-                // B. 绘制框内图片 (Clipped to Bottom Nested Box)
+                // B. 绘制框内图 (Clip 至下嵌套卡片)
                 ctx.save();
                 ctx.beginPath();
-                ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                 ctx.clip();
-                drawImageLayer(state.imageA, bottomBoxX, bottomBoxY, boxSize, boxSize, state.offsetBottomFg, state.scaleBottomFg);
+                drawLayerImage(stateData[layers.bottomFg.imgKey], bottomBoxX, bottomBoxY, boxSize, boxSize, layers.bottomFg.offset, layers.bottomFg.scale);
                 ctx.restore();
 
-                // C. 绘制上层描边
+                // C. 绘制嵌套边框
                 if (borderPx > 0) {
                     ctx.save();
-                    ctx.strokeStyle = state.borderColor;
+                    ctx.strokeStyle = stateData.borderColor;
                     ctx.lineWidth = borderPx;
                     ctx.beginPath();
-                    ExportEngine.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                    this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
                     ctx.stroke();
                     ctx.restore();
                 }
 
-                // 6. 叠加胶片颗粒
-                if (state.grainOpacity > 0) {
+                // 6. 叠加胶片颗粒 (Film Grain)
+                if (stateData.grainOpacity > 0) {
                     ctx.save();
-                    ctx.fillStyle = `rgba(255, 255, 255, ${state.grainOpacity / 1.5})`;
-                    for (let i = 0; i < outW; i += 3) {
-                        for (let j = 0; j < outH; j += 3) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${stateData.grainOpacity / 1.5})`;
+                    for (let i = 0; i < width; i += 3) {
+                        for (let j = 0; j < height; j += 3) {
                             if (Math.random() > 0.5) {
                                 ctx.fillRect(i, j, 1.5, 1.5);
                             }
@@ -1059,40 +429,70 @@
                     ctx.restore();
                 }
 
-                // 7. 导出至用户端
-                setTimeout(() => {
-                    try {
-                        const dataURL = canvas.toDataURL('image/png');
-                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                        
-                        if (isMobile) {
-                            document.getElementById('modal-download-img').src = dataURL;
-                            document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = `riyad_inverse_perfect_${Date.now()}.png`;
-                            link.href = dataURL;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }
-                    } catch (e) {
-                        const dataURL = canvas.toDataURL('image/png');
-                        document.getElementById('modal-download-img').src = dataURL;
-                        document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
-                    } finally {
-                        // 彻底置空宽高释放物理内存
-                        canvas.width = 0;
-                        canvas.height = 0;
-                        
-                        UI.btnDownload.innerHTML = origHTML;
-                        lucide.createIcons();
+                // 7. 预览专属：九宫格辅助线与当前操控层指示框
+                if (!options.isExport) {
+                    this.drawActiveHighlights(ctx, stateData, width, height, options.showGrid);
+                }
+            },
+
+            // 绘制预览时的交互辅助虚线
+            drawActiveHighlights(ctx, stateData, width, height, showGrid) {
+                const active = stateData.activeLayer;
+                const midY = height / 2;
+                const boxSize = width * (stateData.centerSize / 100);
+                const radiusPx = stateData.radius * (width / 320);
+
+                let rect = { x: 0, y: 0, w: width, h: midY };
+                if (active === 'topBg') {
+                    rect = { x: 0, y: 0, w: width, h: midY };
+                } else if (active === 'bottomBg') {
+                    rect = { x: 0, y: midY, w: width, h: midY };
+                } else if (active === 'topFg') {
+                    rect = { x: width / 2 - boxSize / 2, y: midY / 2 - boxSize / 2, w: boxSize, h: boxSize };
+                } else if (active === 'bottomFg') {
+                    rect = { x: width / 2 - boxSize / 2, y: midY + (midY / 2) - boxSize / 2, w: boxSize, h: boxSize };
+                }
+
+                // A. 绘制激活边界光圈
+                ctx.save();
+                ctx.strokeStyle = '#8B7355';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (active === 'topFg' || active === 'bottomFg') {
+                    this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
+                } else {
+                    ctx.rect(rect.x, rect.y, rect.w, rect.h);
+                }
+                ctx.stroke();
+                ctx.restore();
+
+                // B. 拖拽期间绘制九宫格 (Rule of Thirds)
+                if (showGrid) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+
+                    ctx.beginPath();
+                    if (active === 'topFg' || active === 'bottomFg') {
+                        this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
+                        ctx.clip();
                     }
-                }, 400);
+
+                    // 垂直三分线
+                    ctx.moveTo(rect.x + rect.w / 3, rect.y); ctx.lineTo(rect.x + rect.w / 3, rect.y + rect.h);
+                    ctx.moveTo(rect.x + (rect.w * 2) / 3, rect.y); ctx.lineTo(rect.x + (rect.w * 2) / 3, rect.y + rect.h);
+                    // 水平三分线
+                    ctx.moveTo(rect.x, rect.y + rect.h / 3); ctx.lineTo(rect.x + rect.w, rect.y + rect.h / 3);
+                    ctx.moveTo(rect.x, rect.y + (rect.h * 2) / 3); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h * 2) / 3);
+
+                    ctx.stroke();
+                    ctx.restore();
+                }
             },
 
             drawRoundedPath(ctx, x, y, width, height, radius) {
-                if (radius === 0) {
+                if (radius <= 0) {
                     ctx.rect(x, y, width, height);
                     return;
                 }
@@ -1110,71 +510,575 @@
         };
 
         // ----------------------------------------------------
-        // 7. Storage (配置草稿自动安全存储 - 纯逻辑参数持久化)
+        // 3. Renderer (负责驱动 Preview Canvas 刷新)
         // ----------------------------------------------------
-        const Storage = {
-            autoSave() {
-                const config = {
-                    ratio: LayerManager.state.ratio,
-                    centerSize: LayerManager.state.centerSize,
-                    radius: LayerManager.state.radius,
-                    grainOpacity: LayerManager.state.grainOpacity,
-                    borderWidth: LayerManager.state.borderWidth,
-                    borderColor: LayerManager.state.borderColor,
-                    offsetTopBg: LayerManager.state.offsetTopBg,
-                    offsetTopFg: LayerManager.state.offsetTopFg,
-                    offsetBottomBg: LayerManager.state.offsetBottomBg,
-                    offsetBottomFg: LayerManager.state.offsetBottomFg,
-                    scaleTopBg: LayerManager.state.scaleTopBg,
-                    scaleTopFg: LayerManager.state.scaleTopFg,
-                    scaleBottomBg: LayerManager.state.scaleBottomBg,
-                    scaleBottomFg: LayerManager.state.scaleBottomFg
-                };
-                localStorage.setItem('riyad_inverse_v3_3_draft', JSON.stringify(config));
+        const Renderer = {
+            previewCanvas: null,
+            ctx: null,
+            isShowingGrid: false,
+
+            init() {
+                this.previewCanvas = document.getElementById('preview-canvas');
+                this.ctx = this.previewCanvas.getContext('2d');
             },
 
-            loadDraft() {
-                const raw = localStorage.getItem('riyad_inverse_v3_3_draft');
-                if (!raw) return;
-                try {
-                    const parsed = JSON.parse(raw);
-                    Object.assign(LayerManager.state, parsed);
-                    
-                    UI.inputCenterSize.value = LayerManager.state.centerSize;
-                    document.getElementById('center-size-val').textContent = LayerManager.state.centerSize + '%';
+            // 统一的 DOM 同步与动画帧渲染
+            renderPreview(showGrid = false) {
+                this.isShowingGrid = showGrid;
+                
+                // 解决 Retina 高清屏渲染发模糊
+                const ws = document.getElementById('workspace');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = ws.getBoundingClientRect();
 
-                    UI.inputRadius.value = LayerManager.state.radius;
-                    document.getElementById('radius-val').textContent = LayerManager.state.radius + 'px';
+                this.previewCanvas.width = rect.width * dpr;
+                this.previewCanvas.height = rect.height * dpr;
 
-                    UI.inputGrain.value = Math.round(LayerManager.state.grainOpacity * 100);
-                    document.getElementById('grain-val').textContent = Math.round(LayerManager.state.grainOpacity * 100) + '%';
+                // 绘制 Preview 图像
+                SceneRenderer.drawScene(
+                    this.ctx, 
+                    state, 
+                    this.previewCanvas.width, 
+                    this.previewCanvas.height, 
+                    { isExport: false, showGrid: this.isShowingGrid }
+                );
 
-                    UI.inputBorderWidth.value = LayerManager.state.borderWidth;
-                    document.getElementById('border-width-val').textContent = LayerManager.state.borderWidth + 'px';
-
-                    UI.inputBorderColor.value = LayerManager.state.borderColor;
-
-                    LayerManager.setRatio(LayerManager.state.ratio);
-                } catch (e) {
-                    console.warn("读取本地配置失败: ", e);
+                // 隐藏/显示空占位卡片
+                const placeholder = document.getElementById('workspace-placeholder');
+                if (state.imageA && state.imageB) {
+                    placeholder.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    placeholder.classList.remove('opacity-0', 'pointer-events-none');
                 }
             }
         };
 
         // ----------------------------------------------------
-        // 系统生命周期挂载
+        // 4. GestureManager (手势与触控响应系统)
+        // ----------------------------------------------------
+        const GestureManager = {
+            startX: 0,
+            startY: 0,
+            initialOffset: { x: 50, y: 50 },
+            startDistance: 0,
+            initialScale: 1.0,
+            isDragging: false,
+
+            init() {
+                this.bindGestures();
+            },
+
+            setActiveLayer(layer) {
+                state.activeLayer = layer;
+                
+                // 同步控制选项卡高亮
+                ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
+                    const tab = document.getElementById(`tab-${l}`);
+                    if (l === layer) {
+                        tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all";
+                    } else {
+                        tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all";
+                    }
+                });
+
+                const transMap = {
+                    'topBg': '上背景 (图A)',
+                    'topFg': '上嵌套 (图B)',
+                    'bottomBg': '下背景 (图B)',
+                    'bottomFg': '下嵌套 (图A)'
+                };
+                document.getElementById('active-layer-indicator').textContent = transMap[layer];
+
+                // 同步所选图层的 scale 滑块值
+                const activeScale = state.layers[layer].scale;
+                document.getElementById('input-active-scale').value = activeScale;
+                document.getElementById('active-scale-val').textContent = activeScale.toFixed(1) + 'x';
+
+                Renderer.renderPreview(false);
+            },
+
+            getTouchDistance(touches) {
+                const dx = touches[0].clientX - touches[1].clientX;
+                const dy = touches[0].clientY - touches[1].clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            },
+
+            // 智能碰撞判定：根据点击位置，自动激活对应位置的图层
+            detectLayerFromCoords(touchX, touchY) {
+                const canvas = Renderer.previewCanvas;
+                const rect = canvas.getBoundingClientRect();
+                const x = touchX - rect.left;
+                const y = touchY - rect.top;
+                const w = rect.width;
+                const h = rect.height;
+                const midY = h / 2;
+
+                const boxSize = w * (state.centerSize / 100);
+                const topBoxX = w / 2 - boxSize / 2;
+                const topBoxY = midY / 2 - boxSize / 2;
+                const bottomBoxX = w / 2 - boxSize / 2;
+                const bottomBoxY = midY + (midY / 2) - boxSize / 2;
+
+                // 判断是否在 topFg (上嵌套)
+                if (x >= topBoxX && x <= topBoxX + boxSize && y >= topBoxY && y <= topBoxY + boxSize) {
+                    return 'topFg';
+                }
+                // 判断是否在 bottomFg (下嵌套)
+                if (x >= bottomBoxX && x <= bottomBoxX + boxSize && y >= bottomBoxY && y <= bottomBoxY + boxSize) {
+                    return 'bottomFg';
+                }
+                // 判断是在上半区还是下半区
+                if (y < midY) return 'topBg';
+                return 'bottomBg';
+            },
+
+            bindGestures() {
+                const canvas = Renderer.previewCanvas;
+
+                const onStart = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    
+                    const touches = e.touches;
+                    const pt = touches ? touches[0] : e;
+                    
+                    // 触控精准选层
+                    const targetLayer = this.detectLayerFromCoords(pt.clientX, pt.clientY);
+                    this.setActiveLayer(targetLayer);
+
+                    this.isDragging = true;
+
+                    if (touches && touches.length === 2) {
+                        this.startDistance = this.getTouchDistance(touches);
+                        this.initialScale = state.layers[targetLayer].scale;
+                        return;
+                    }
+
+                    this.startX = pt.clientX;
+                    this.startY = pt.clientY;
+                    this.initialOffset = { ...state.layers[targetLayer].offset };
+
+                    Renderer.renderPreview(true); // 打开九宫格
+                };
+
+                const onMove = (e) => {
+                    if (!this.isDragging) return;
+                    if (e.cancelable) e.preventDefault();
+
+                    const targetLayer = state.activeLayer;
+                    const layerObj = state.layers[targetLayer];
+                    const touches = e.touches;
+
+                    // 处理双指捏合缩放
+                    if (touches && touches.length === 2) {
+                        const dist = this.getTouchDistance(touches);
+                        if (this.startDistance > 0) {
+                            const scale = Math.max(1.0, Math.min(4.0, this.initialScale * (dist / this.startDistance)));
+                            layerObj.scale = scale;
+                            
+                            document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
+                            document.getElementById('input-active-scale').value = scale;
+                        }
+                        Renderer.renderPreview(true);
+                        return;
+                    }
+
+                    // 处理单指/鼠标平移
+                    const pt = touches ? touches[0] : e;
+                    const dx = pt.clientX - this.startX;
+                    const dy = pt.clientY - this.startY;
+
+                    const wsW = parseFloat(document.getElementById('workspace').style.width || 320);
+                    const scaleFactorW = wsW * 0.8;
+                    const scaleFactorH = wsW * 0.4;
+                    const scaleVal = layerObj.scale;
+
+                    const chgX = (dx / scaleFactorW) * 100 / scaleVal;
+                    const chgY = (dy / scaleFactorH) * 100 / scaleVal;
+
+                    layerObj.offset.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
+                    layerObj.offset.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
+
+                    Renderer.renderPreview(true);
+                };
+
+                const onEnd = () => {
+                    if (this.isDragging) {
+                        this.isDragging = false;
+                        Renderer.renderPreview(false); // 隐起九宫格
+                        Storage.autoSave();
+                    }
+                };
+
+                const onWheel = (e) => {
+                    e.preventDefault();
+                    const targetLayer = this.detectLayerFromCoords(e.clientX, e.clientY);
+                    this.setActiveLayer(targetLayer);
+
+                    const factor = -e.deltaY * 0.0015;
+                    const layerObj = state.layers[targetLayer];
+                    layerObj.scale = Math.max(1.0, Math.min(4.0, layerObj.scale + factor));
+
+                    this.setActiveLayer(targetLayer);
+                    Storage.autoSave();
+                };
+
+                canvas.addEventListener('mousedown', onStart);
+                canvas.addEventListener('touchstart', onStart, { passive: false });
+                canvas.addEventListener('wheel', onWheel, { passive: false });
+
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchend', onEnd);
+            }
+        };
+
+        // ----------------------------------------------------
+        // 5. ExportEngine (纯粹的数据渲染导出引擎 - 绝对不读取 DOM)
+        // ----------------------------------------------------
+        const ExportEngine = {
+            async generate() {
+                if (!state.imageA || !state.imageB) {
+                    const alertBox = document.createElement('div');
+                    alertBox.className = "fixed top-12 left-1/2 -translate-x-1/2 bg-[#8B7355] text-white font-bold px-6 py-3 rounded-full shadow-xl z-50 transition-all text-xs tracking-wider";
+                    alertBox.textContent = "请先导入图A和图B才可以生成哦！";
+                    document.body.appendChild(alertBox);
+                    setTimeout(() => alertBox.remove(), 2500);
+                    return;
+                }
+
+                // 【重构重点 ★★★★★】在保存前显式等待一帧 rAF，保证 state 状态彻底刷新与锁死
+                await new Promise(requestAnimationFrame);
+
+                const btnDownload = document.getElementById('btn-download');
+                const origHTML = btnDownload.innerHTML;
+                btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清100%同步重构中...</span>`;
+                lucide.createIcons();
+
+                let outW = 1600;
+                let outH = 1600;
+
+                if (state.ratio === '3-4') {
+                    outW = 1600;
+                    outH = 2133;
+                } else if (state.ratio === '9-16') {
+                    outW = 1440;
+                    outH = 2560;
+                }
+
+                // 独立创建 Export Canvas 导出层，纯依靠 state 绘制!
+                const exportCanvas = document.getElementById('export-canvas');
+                exportCanvas.width = outW;
+                exportCanvas.height = outH;
+                const ctx = exportCanvas.getContext('2d');
+
+                // 调用核心公共引擎绘制Scene (isExport: true 自动不画辅助虚线)
+                SceneRenderer.drawScene(ctx, state, outW, outH, { isExport: true, showGrid: false });
+
+                // 唤醒保存弹层
+                setTimeout(() => {
+                    try {
+                        const dataURL = exportCanvas.toDataURL('image/png');
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                        
+                        if (isMobile) {
+                            document.getElementById('modal-download-img').src = dataURL;
+                            document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
+                        } else {
+                            const link = document.createElement('a');
+                            link.download = `riyad_inverse_v4_${Date.now()}.png`;
+                            link.href = dataURL;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                    } catch (e) {
+                        const dataURL = exportCanvas.toDataURL('image/png');
+                        document.getElementById('modal-download-img').src = dataURL;
+                        document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
+                    } finally {
+                        // 释放显存
+                        exportCanvas.width = 0;
+                        exportCanvas.height = 0;
+                        btnDownload.innerHTML = origHTML;
+                        lucide.createIcons();
+                    }
+                }, 200);
+            }
+        };
+
+        // ----------------------------------------------------
+        // 6. LayerManager (加载及素材控制)
+        // ----------------------------------------------------
+        const LayerManager = {
+            setRatio(ratio) {
+                state.ratio = ratio;
+                this.adaptWorkspaceScale();
+
+                document.querySelectorAll('.btn-ratio').forEach(btn => {
+                    if (btn.dataset.ratio === ratio) {
+                        btn.className = "btn-ratio py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm";
+                    } else {
+                        btn.className = "btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button";
+                    }
+                });
+
+                Renderer.renderPreview(false);
+                Storage.autoSave();
+            },
+
+            adaptWorkspaceScale() {
+                const ws = document.getElementById('workspace');
+                const container = ws.parentElement;
+                const containerW = container.clientWidth;
+                const containerH = container.clientHeight;
+
+                let targetW = 400;
+                let targetH = 400;
+
+                if (state.ratio === '3-4') {
+                    targetW = 360;
+                    targetH = 480;
+                } else if (state.ratio === '9-16') {
+                    targetW = 320;
+                    targetH = 568;
+                }
+
+                let scale = 1;
+                const scaleX = (containerW - 24) / targetW;
+                const scaleY = (containerH - 24) / targetH;
+                scale = Math.min(scaleX, scaleY, 1);
+
+                ws.style.width = `${targetW * scale}px`;
+                ws.style.height = `${targetH * scale}px`;
+            },
+
+            loadSampleAssets() {
+                const sampleA = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80";
+                const sampleB = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80";
+
+                let loaded = 0;
+                const checkAndRun = () => {
+                    loaded++;
+                    if (loaded === 2) {
+                        Renderer.renderPreview(false);
+                        Storage.autoSave();
+                    }
+                };
+
+                const imgA = new Image();
+                imgA.crossOrigin = "anonymous";
+                imgA.onload = () => {
+                    state.imageA = imgA;
+                    document.getElementById('img-thumb-a').src = sampleA;
+                    document.getElementById('preview-container-a').classList.remove('hidden');
+                    document.getElementById('placeholder-a').classList.add('hidden');
+                    checkAndRun();
+                };
+                imgA.src = sampleA;
+
+                const imgB = new Image();
+                imgB.crossOrigin = "anonymous";
+                imgB.onload = () => {
+                    state.imageB = imgB;
+                    document.getElementById('img-thumb-b').src = sampleB;
+                    document.getElementById('preview-container-b').classList.remove('hidden');
+                    document.getElementById('placeholder-b').classList.add('hidden');
+                    checkAndRun();
+                };
+                imgB.src = sampleB;
+            }
+        };
+
+        // ----------------------------------------------------
+        // 7. Storage (逻辑配置自动持久化)
+        // ----------------------------------------------------
+        const Storage = {
+            autoSave() {
+                const config = {
+                    ratio: state.ratio,
+                    centerSize: state.centerSize,
+                    radius: state.radius,
+                    grainOpacity: state.grainOpacity,
+                    borderWidth: state.borderWidth,
+                    borderColor: state.borderColor,
+                    layers: state.layers
+                };
+                localStorage.setItem('riyad_inverse_v4_config', JSON.stringify(config));
+            },
+
+            loadDraft() {
+                const raw = localStorage.getItem('riyad_inverse_v4_config');
+                if (!raw) return;
+                try {
+                    const parsed = JSON.parse(raw);
+                    state.ratio = parsed.ratio || '1-1';
+                    state.centerSize = parsed.centerSize || 35;
+                    state.radius = parsed.radius || 0;
+                    state.grainOpacity = parsed.grainOpacity || 0.06;
+                    state.borderWidth = parsed.borderWidth || 1;
+                    state.borderColor = parsed.borderColor || '#FFFFFF';
+
+                    if (parsed.layers) {
+                        state.layers = parsed.layers;
+                    }
+
+                    // 恢复控件面板 DOM 值
+                    document.getElementById('input-center-size').value = state.centerSize;
+                    document.getElementById('center-size-val').textContent = state.centerSize + '%';
+
+                    document.getElementById('input-radius').value = state.radius;
+                    document.getElementById('radius-val').textContent = state.radius + 'px';
+
+                    document.getElementById('input-grain').value = Math.round(state.grainOpacity * 100);
+                    document.getElementById('grain-val').textContent = Math.round(state.grainOpacity * 100) + '%';
+
+                    document.getElementById('input-border-width').value = state.borderWidth;
+                    document.getElementById('border-width-val').textContent = state.borderWidth + 'px';
+
+                    document.getElementById('input-border-color').value = state.borderColor;
+
+                    LayerManager.setRatio(state.ratio);
+                } catch (e) {
+                    console.warn("读取本地草稿失败:", e);
+                }
+            }
+        };
+
+        // ----------------------------------------------------
+        // 8. EventManager (【重构重点】集中绑定所有 DOM 事件)
+        // ----------------------------------------------------
+        const EventManager = {
+            bindEvents() {
+                // 1. 上传图片事件
+                document.getElementById('upload-a').addEventListener('change', (e) => this.handleUpload(e, 'A'));
+                document.getElementById('upload-b').addEventListener('change', (e) => this.handleUpload(e, 'B'));
+
+                // 2. 样图按钮
+                document.getElementById('btn-sample-assets').addEventListener('click', () => LayerManager.loadSampleAssets());
+
+                // 3. 画幅比例按钮组
+                document.querySelectorAll('.btn-ratio').forEach(btn => {
+                    btn.addEventListener('click', () => LayerManager.setRatio(btn.dataset.ratio));
+                });
+
+                // 4. 嵌套尺寸 Slider
+                document.getElementById('input-center-size').addEventListener('input', (e) => {
+                    state.centerSize = parseInt(e.target.value);
+                    document.getElementById('center-size-val').textContent = state.centerSize + '%';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 5. 边框宽度 Slider
+                document.getElementById('input-border-width').addEventListener('input', (e) => {
+                    state.borderWidth = parseInt(e.target.value);
+                    document.getElementById('border-width-val').textContent = state.borderWidth + 'px';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 6. 预设颜色 & Color Input
+                document.querySelectorAll('.btn-preset-color').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        state.borderColor = btn.dataset.color;
+                        document.getElementById('input-border-color').value = state.borderColor;
+                        Renderer.renderPreview(false);
+                        Storage.autoSave();
+                    });
+                });
+                document.getElementById('input-border-color').addEventListener('input', (e) => {
+                    state.borderColor = e.target.value;
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 7. 图层 Tab 切换
+                document.querySelectorAll('.btn-layer-tab').forEach(tab => {
+                    tab.addEventListener('click', () => GestureManager.setActiveLayer(tab.dataset.layer));
+                });
+
+                // 8. 激活图层的 Scale 缩放条
+                document.getElementById('input-active-scale').addEventListener('input', (e) => {
+                    const scale = parseFloat(e.target.value);
+                    state.layers[state.activeLayer].scale = scale;
+                    document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 9. 圆角 & 噪点
+                document.getElementById('input-radius').addEventListener('input', (e) => {
+                    state.radius = parseInt(e.target.value);
+                    document.getElementById('radius-val').textContent = state.radius + 'px';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+                document.getElementById('input-grain').addEventListener('input', (e) => {
+                    const grainVal = parseInt(e.target.value);
+                    state.grainOpacity = grainVal / 100;
+                    document.getElementById('grain-val').textContent = grainVal + '%';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 10. 下载按钮与关弹窗
+                document.getElementById('btn-download').addEventListener('click', () => ExportEngine.generate());
+                document.getElementById('btn-close-modal').addEventListener('click', () => {
+                    document.getElementById('mobile-download-modal').classList.add('opacity-0', 'pointer-events-none');
+                });
+
+                // 11. 窗口 Resize 自适应
+                window.addEventListener('resize', () => {
+                    LayerManager.adaptWorkspaceScale();
+                    Renderer.renderPreview(false);
+                });
+            },
+
+            handleUpload(event, type) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64 = e.target.result;
+                    const img = new Image();
+                    img.onload = () => {
+                        if (type === 'A') {
+                            state.imageA = img;
+                            document.getElementById('img-thumb-a').src = base64;
+                            document.getElementById('preview-container-a').classList.remove('hidden');
+                            document.getElementById('placeholder-a').classList.add('hidden');
+                        } else {
+                            state.imageB = img;
+                            document.getElementById('img-thumb-b').src = base64;
+                            document.getElementById('preview-container-b').classList.remove('hidden');
+                            document.getElementById('placeholder-b').classList.add('hidden');
+                        }
+
+                        Renderer.renderPreview(false);
+                        Storage.autoSave();
+                    };
+                    img.src = base64;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // ----------------------------------------------------
+        // 系统生命周期启动
         // ----------------------------------------------------
         window.addEventListener('DOMContentLoaded', () => {
-            Theme.init();
-            UI.init();
+            Renderer.init();
             GestureManager.init();
+            EventManager.bindEvents();
             Storage.loadDraft();
-            
+
             GestureManager.setActiveLayer('topBg');
-            
+
             setTimeout(() => {
-                UI.adaptWorkspaceScale();
-                Renderer.syncToDOM();
+                LayerManager.adaptWorkspaceScale();
+                Renderer.renderPreview(false);
             }, 100);
         });
     </script>
