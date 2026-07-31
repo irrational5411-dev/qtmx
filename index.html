@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V6.4 专业排版生成器</title>
+    <title>Riyad Studio V6.6 专业排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -19,13 +19,8 @@
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior: none;
-        }
-
-        @media (min-width: 1024px) {
-            body {
-                height: 100vh;
-                overflow: hidden;
-            }
+            height: 100vh;
+            overflow: hidden;
         }
 
         #preview-canvas {
@@ -39,7 +34,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col lg:flex-row bg-[#FAF6F0] text-[#4A3E3D] dark:bg-[#1E1B18] dark:text-[#EFEAE2]">
+<body class="flex flex-col lg:flex-row bg-[#FAF6F0] text-[#4A3E3D] dark:bg-[#1E1B18] dark:text-[#EFEAE2]">
 
     <div style="position:absolute; opacity:0; pointer-events:none;">
         <span style="font-family: 'Cinzel';">preload</span>
@@ -50,12 +45,12 @@
     </div>
 
     <!-- 1. 移动端顶部导航栏 -->
-    <header class="lg:hidden shrink-0 bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md border-b border-[#EFEAE2] dark:border-[#3E3834] px-4 py-3 flex items-center justify-between z-40 sticky top-0">
+    <header class="lg:hidden shrink-0 bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md border-b border-[#EFEAE2] dark:border-[#3E3834] px-4 py-3 flex items-center justify-between z-40">
         <div class="flex items-center gap-2">
             <span class="p-1.5 bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] rounded-lg text-white">
                 <i data-lucide="camera" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v6.4</span>
+            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v6.6</span>
         </div>
         <div class="flex items-center gap-2">
             <button id="btn-theme-toggle-m" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#70FFFF] cream-button">
@@ -69,8 +64,8 @@
         </div>
     </header>
 
-    <!-- 2. 主预览画幅舞台 (桌面端 sticky 固定，移动端独立视口) -->
-    <div class="lg:h-screen lg:w-1/2 lg:sticky lg:top-0 flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden shrink-0">
+    <!-- 2. 主预览画幅舞台 (绝对固定视口) -->
+    <div class="lg:h-screen lg:w-1/2 lg:sticky lg:top-0 flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden shrink-0 touch-none">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
             <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#1E3838] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
             <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] dark:bg-[#152E2E] blur-[100px] bottom-1/4 right-1/4"></div>
@@ -86,15 +81,15 @@
         </div>
     </div>
 
-    <!-- 3. 控制面板 (仅此区域可自由独立滚动) -->
-    <div class="w-full lg:w-1/2 bg-white dark:bg-[#282421] border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto z-30 lg:h-screen pb-20">
+    <!-- 3. 控制面板 (独立局部滚动，不带跑整个网页) -->
+    <div class="w-full lg:w-1/2 bg-white dark:bg-[#282421] border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto z-30 h-[calc(100vh-64px)] lg:h-screen pb-24">
         
         <div class="hidden lg:flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="p-1.5 bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] rounded-xl text-white">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                 </span>
-                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v6.4</span>
+                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v6.6</span>
             </div>
             <div class="flex items-center gap-2">
                 <button id="btn-theme-toggle" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#70FFFF] cream-button" title="切换深色/浅色模式">
@@ -109,14 +104,13 @@
         </div>
         <hr class="border-[#EFEAE2] dark:border-[#3E3834] hidden lg:block">
 
-        <!-- 第 1 步：画幅比例 (前置) -->
-        <div class="flex flex-col gap-1.5">
+        <!-- 第 1 步：画幅比例 (优化为精美卡片式选项) -->
+        <div class="flex flex-col gap-2">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="aspect-ratio" class="w-3.5 h-3.5"></i> 1. 选择画幅比例
             </span>
-            <div class="flex items-center justify-between bg-[#FAF6F0] dark:bg-[#35302C] p-2 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35]">
-                <span class="text-[11px] font-medium ml-1">尺寸预设</span>
-                <div id="ratio-group" class="flex gap-1"></div>
+            <div id="ratio-cards-group" class="grid grid-cols-3 gap-2">
+                <!-- 动态生成卡片式比例选择 -->
             </div>
         </div>
 
@@ -209,14 +203,14 @@
             </div>
         </div>
 
-        <!-- 文本排版增强模块 (独立图层、精简输入框、5大预设) -->
+        <!-- 文本排版增强模块 -->
         <div class="flex flex-col gap-2.5">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="type" class="w-3.5 h-3.5"></i> 独立文本排版设计
             </span>
             <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-3.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col gap-3.5">
                 
-                <!-- 1. 日期图层模块 -->
+                <!-- 1. 日期图层模块 (真实系统时间联动) -->
                 <div class="flex flex-col gap-1.5">
                     <div class="flex items-center justify-between">
                         <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#70FFFF]">① 日期标注层</label>
@@ -228,16 +222,16 @@
                     </div>
                     <div class="flex gap-2">
                         <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
-                        <select id="input-date-format" class="w-32 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
-                            <option value="DD MMM YYYY">04 APR 2026</option>
-                            <option value="YYYY.MM.DD">2026.04.04</option>
-                            <option value="MM/DD/YYYY">04/04/2026</option>
-                            <option value="Month DD, YYYY">April 04, 2026</option>
+                        <select id="input-date-format" class="w-36 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
+                            <option value="DD MMM YYYY">今天日期格式</option>
+                            <option value="YYYY.MM.DD">2026.08.01</option>
+                            <option value="MM/DD/YYYY">08/01/2026</option>
+                            <option value="Month DD, YYYY">August 01, 2026</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- 2. 自由文字图层模块 (输入框精简) -->
+                <!-- 2. 自由文字图层模块 (字号 7% 优雅初始态) -->
                 <div class="flex flex-col gap-1.5 pt-2.5 border-t border-[#EFEAE2] dark:border-[#433B35]">
                     <div class="flex items-center justify-between">
                         <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#70FFFF]">② 自由文字层</label>
@@ -371,7 +365,7 @@
                 <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
             </svg>
-            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#70FFFF]/60 tracking-wider">Aesthetic Poster Engine V6.4 (Mint Choco)</span>
+            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#70FFFF]/60 tracking-wider">Aesthetic Poster Engine V6.6 (Masterpiece)</span>
         </div>
 
     </div>
@@ -419,7 +413,7 @@
             return dateStr;
         }
 
-        // 严格读取系统本地当前真实时间
+        // 自动精确读取系统当前真实本地日期
         const getSystemTodayStr = () => {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -437,7 +431,7 @@
             grainOpacity: 0.06, 
             borderWidth: 0, 
             borderColor: '#FFFFFF',
-            activeLayer: 'textLayer',
+            activeLayer: 'storyBg',
 
             dateLayer: {
                 show: true,
@@ -450,7 +444,7 @@
                 show: true,
                 text: 'SHANGHAI // SEA & SUN',
                 fontFamily: 'Cinzel',
-                fontSize: 7, // 优化：初始字号更加精致
+                fontSize: 7, 
                 color: '#FFFFFF',
                 shadowBlur: 6,
                 offset: { x: 50, y: 82 } 
@@ -680,6 +674,8 @@
                 const ws = document.getElementById('workspace');
                 const dpr = window.devicePixelRatio || 1;
                 const rect = ws.getBoundingClientRect();
+                
+                // 【核心修复】：物理像素与 CSS 显示尺寸彻底分离，解决左上角小海报 Bug
                 this.previewCanvas.width = rect.width * dpr;
                 this.previewCanvas.height = rect.height * dpr;
                 this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -771,13 +767,17 @@
                 };
                 const onMove = (e) => {
                     if (!this.isDragging) return;
+                    
+                    // 【核心修复】：精准拦截 touchmove，只有在拖动画布时阻止默认页面滚动
+                    if (e.cancelable) e.preventDefault();
+
                     const layerTarget = this.getActiveLayerTarget();
                     if (!layerTarget) return;
 
                     if (e.touches && e.touches.length === 2) {
                         const dist = this.getTouchDistance(e.touches);
                         if (this.startDistance > 0 && state.activeLayer === 'textLayer') {
-                            layerTarget.scale = Math.max(0.5, Math.min(3.0, this.initialScale * (dist / this.startDistance))); // 优化缩放上限为 3.0
+                            layerTarget.scale = Math.max(0.5, Math.min(3.0, this.initialScale * (dist / this.startDistance)));
                         }
                         Renderer.renderPreview(); return;
                     }
@@ -809,8 +809,14 @@
                     }
                 };
 
-                canvas.addEventListener('mousedown', onStart); canvas.addEventListener('touchstart', onStart, { passive: true }); canvas.addEventListener('wheel', onWheel, { passive: false });
-                window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove, { passive: true }); window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
+                canvas.addEventListener('mousedown', onStart); 
+                canvas.addEventListener('touchstart', onStart, { passive: true }); 
+                canvas.addEventListener('touchmove', onMove, { passive: false }); // 确保可以自由控制滚动
+                canvas.addEventListener('wheel', onWheel, { passive: false });
+
+                window.addEventListener('mousemove', onMove); 
+                window.addEventListener('mouseup', onEnd); 
+                window.addEventListener('touchend', onEnd);
             }
         };
 
@@ -859,7 +865,7 @@
                     else btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
                 });
                 
-                this.rebuildRatioButtons();
+                this.rebuildRatioCards();
 
                 if (mode === 'inverse') {
                     document.getElementById('panel-inverse-controls').classList.remove('hidden');
@@ -878,16 +884,23 @@
                 Renderer.renderPreview();
             },
 
-            rebuildRatioButtons() {
-                const group = document.getElementById('ratio-group');
+            // 升级为极具设计感的卡片式尺寸选择器
+            rebuildRatioCards() {
+                const group = document.getElementById('ratio-cards-group');
                 group.innerHTML = '';
-                const ratioName = { "9-16": "9:16", "3-4": "3:4", "1-1": "1:1" };
+                const ratioMeta = {
+                    "9-16": { name: "9:16", desc: "Ins Story" },
+                    "3-4": { name: "3:4", desc: "经典海报" },
+                    "1-1": { name: "1:1", desc: "正方形" }
+                };
                 const ratios = state.mode === 'inverse' ? ['1-1', '3-4', '9-16'] : ['9-16', '3-4', '1-1'];
                 ratios.forEach(r => {
+                    const meta = ratioMeta[r];
                     const btn = document.createElement('button');
                     btn.dataset.ratio = r;
-                    btn.className = `btn-ratio px-2.5 py-1 text-[10px] rounded-lg transition-all cream-button ${state.ratio === r ? 'bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white font-bold shadow-sm' : 'bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2]'}`;
-                    btn.textContent = ratioName[r];
+                    const isSelected = state.ratio === r;
+                    btn.className = `p-2 rounded-xl border text-center transition-all cream-button flex flex-col items-center justify-center gap-0.5 ${isSelected ? 'bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white border-transparent font-bold shadow-sm' : 'bg-white dark:bg-[#282421] border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2]'}`;
+                    btn.innerHTML = `<span class="text-xs font-bold">${meta.name}</span><span class="text-[9px] opacity-75">${meta.desc}</span>`;
                     btn.addEventListener('click', () => this.setRatio(r));
                     group.appendChild(btn);
                 });
@@ -895,11 +908,7 @@
 
             setRatio(ratio) {
                 state.ratio = ratio; this.adaptWorkspaceScale();
-                document.querySelectorAll('.btn-ratio').forEach(btn => {
-                    const r = btn.dataset.ratio;
-                    if (r === ratio) btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white font-bold shadow-sm";
-                    else btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2] transition-all cream-button";
-                });
+                this.rebuildRatioCards();
                 Renderer.renderPreview();
             },
 
@@ -910,7 +919,7 @@
                     else btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-medium";
                 });
                 
-                // 【修复核心】：切换宫格布局时重置所有图片层偏移和缩放，防止拉伸错位
+                // 【核心修复】：切换布局时重置所有网格图片的 offset 和 scale，彻底根除拉伸错位
                 state.story.gridLayers.forEach(layer => {
                     layer.offset = { x: 50, y: 50 };
                     layer.scale = 1.0;
@@ -945,7 +954,7 @@
             },
 
             loadSampleAssets() {
-                document.getElementById('workspace-placeholder').querySelector('h3').textContent = "正在调配精美摄影图...";
+                document.getElementById('workspace-placeholder')?.remove();
                 const today = getSystemTodayStr();
                 document.getElementById('input-date-val').value = today; state.dateLayer.raw = today;
                 document.getElementById('input-free-text').value = "SHANGHAI // SEA & SUN"; state.textLayer.text = "SHANGHAI // SEA & SUN";
@@ -1011,7 +1020,7 @@
                 document.getElementById('input-text-color').addEventListener('input', (e) => { state.textLayer.color = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-text-shadow').addEventListener('input', (e) => { state.textLayer.shadowBlur = parseInt(e.target.value); Renderer.renderPreview(); });
                 
-                // 5 大位置预设
+                // 5 大文字预设
                 document.getElementById('btn-text-pos-top').addEventListener('click', () => { 
                     state.dateLayer.offset.y = 8; state.dateLayer.offset.x = 50; 
                     state.textLayer.offset.y = 15; state.textLayer.offset.x = 50; 
@@ -1055,11 +1064,12 @@
         window.addEventListener('DOMContentLoaded', () => {
             Renderer.init(); GestureManager.init(); EventManager.bindEvents();
             
+            // 自动精确初始化今天的系统日期
             const systemToday = getSystemTodayStr();
             document.getElementById('input-date-val').value = systemToday;
             state.dateLayer.raw = systemToday;
 
-            LayerManager.rebuildRatioButtons();
+            LayerManager.rebuildRatioCards();
             setTimeout(() => { LayerManager.adaptWorkspaceScale(); Renderer.renderPreview(); }, 100);
         });
     </script>
