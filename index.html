@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad 互换与 Ins Story 美学排版生成器 V5.2</title>
+    <title>Riyad 互换与 Ins Story 美学排版生成器 V5.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -18,10 +18,9 @@
             background-color: #FAF6F0; /* 奶油浅底色 */
             color: #4A3E3D; /* 焦糖深咖文字 */
             -webkit-tap-highlight-color: transparent;
-            /* ⚠️已移除全局 touch-action: none; 恢复控制面板正常上下滑动 */
         }
 
-        /* 仅对画板区实施绝对手势锁定，保证拖拽时不带动页面 */
+        /* 仅对画板区实施绝对手势锁定，保证页面可正常滚动 */
         #preview-canvas {
             touch-action: none; 
         }
@@ -39,17 +38,11 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
             pointer-events: none; mix-blend-mode: overlay; z-index: 5; opacity: 0.06;
         }
-
-        /* 九宫格辅助线 */
-        .thirds-grid {
-            pointer-events: none; opacity: 0; transition: opacity 0.2s ease; z-index: 20;
-        }
-        .thirds-grid.active { opacity: 1; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col lg:flex-row overflow-hidden select-none">
+<body class="min-h-screen flex flex-col lg:flex-row overflow-x-hidden select-none">
 
-    <!-- 隐藏的预加载字体容器，防止 Canvas 首次渲染时字体未就绪跳闪 -->
+    <!-- 字体预加载 -->
     <div style="position:absolute; opacity:0; pointer-events:none;">
         <span style="font-family: 'Cinzel';">preload</span>
         <span style="font-family: 'Playfair Display';">preload</span>
@@ -59,12 +52,12 @@
     </div>
 
     <!-- 1. 移动端顶部导航栏 -->
-    <header class="lg:hidden shrink-0 bg-white/80 backdrop-blur-md border-b border-[#EFEAE2] px-4 py-3 flex items-center justify-between z-40">
+    <header class="lg:hidden shrink-0 bg-white/80 backdrop-blur-md border-b border-[#EFEAE2] px-4 py-3 flex items-center justify-between z-40 sticky top-0">
         <div class="flex items-center gap-2">
             <span class="p-1.5 bg-[#8B7355] rounded-lg text-white">
                 <i data-lucide="camera" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.2</span>
+            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.3</span>
         </div>
         <button id="btn-sample-assets" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
             <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
@@ -73,13 +66,13 @@
     </header>
 
     <!-- 2. 主预览画幅舞台 -->
-    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden min-h-0">
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden min-h-[360px] lg:min-h-screen">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
             <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
             <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] blur-[100px] bottom-1/4 right-1/4"></div>
         </div>
 
-        <div id="workspace" class="relative bg-white shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] overflow-hidden transition-all duration-300 flex items-center justify-center max-w-full max-h-full border border-[#EFEAE2]" style="width: 320px; height: 568px; border-radius: 12px;">
+        <div id="workspace" class="relative bg-white shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] overflow-hidden transition-all duration-300 flex items-center justify-center border border-[#EFEAE2]" style="width: 320px; height: 568px; border-radius: 12px;">
             <div id="workspace-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6F0]/95 z-30 gap-3.5 text-center px-6 transition-opacity duration-300">
                 <div class="w-12 h-12 rounded-full bg-[#8B7355]/10 border border-[#8B7355]/20 flex items-center justify-center text-[#8B7355]">
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
@@ -87,7 +80,7 @@
                 <div>
                     <h3 class="text-xs font-bold text-[#4A3E3D]">Riyad 美学排版生成器</h3>
                     <p class="text-[10px] text-zinc-500 mt-1 max-w-[200px] mx-auto leading-relaxed">
-                        支持多图网格、高级自由文字排版。双指可缩放图层与文字，支持直接拖拽对齐。
+                        支持多图网格、多国字体、自定义日期与自由拖拽排版。
                     </p>
                 </div>
             </div>
@@ -97,7 +90,7 @@
     </div>
 
     <!-- 3. 控制面板 -->
-    <div class="w-full lg:w-[420px] bg-white border-t lg:border-t-0 lg:border-r border-[#EFEAE2] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto max-h-[55vh] lg:max-h-screen lg:h-screen no-scrollbar z-30 shadow-[0_-10px_30px_rgba(139,115,85,0.05)] lg:shadow-none pb-8" style="touch-action: pan-y;">
+    <div class="w-full lg:w-[420px] bg-white border-t lg:border-t-0 lg:border-r border-[#EFEAE2] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto z-30 shadow-[0_-10px_30px_rgba(139,115,85,0.05)] lg:shadow-none pb-12">
         
         <div class="hidden lg:block">
             <div class="flex items-center justify-between mb-1">
@@ -105,7 +98,7 @@
                     <span class="p-1.5 bg-[#8B7355] rounded-xl text-white">
                         <i data-lucide="camera" class="w-4 h-4"></i>
                     </span>
-                    <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.2</span>
+                    <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.3</span>
                 </div>
                 <button id="btn-sample-assets-pc" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
                     <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
@@ -116,23 +109,23 @@
             <hr class="border-[#EFEAE2] mt-4">
         </div>
 
-        <!-- 模式选择 Selector -->
+        <!-- 模式选择 -->
         <div class="flex flex-col gap-1.5">
             <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 核心排版模式
             </span>
             <div class="grid grid-cols-2 gap-2">
-                <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5">
+                <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 镜像互换模式
                 </button>
-                <button id="mode-btn-story" data-mode="story" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
+                <button id="mode-btn-story" data-mode="story" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5">
                     <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Ins Story 拼图
                 </button>
             </div>
         </div>
 
         <!-- 模式 A：镜像互换控制组 -->
-        <div id="panel-inverse-controls" class="flex flex-col gap-3">
+        <div id="panel-inverse-controls" class="flex flex-col gap-3 hidden">
             <div class="flex flex-col gap-2">
                 <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
                     <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> 上传素材 (双图)
@@ -150,7 +143,6 @@
                             </div>
                         </label>
                     </div>
-
                     <div class="relative">
                         <input type="file" id="upload-b" accept="image/*" class="hidden">
                         <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
@@ -168,8 +160,8 @@
         </div>
 
         <!-- 模式 B：Ins Story 多图嵌套控制组 -->
-        <div id="panel-story-controls" class="flex flex-col gap-3 hidden">
-            <!-- 上传全屏背景图 -->
+        <div id="panel-story-controls" class="flex flex-col gap-3">
+            <!-- 上传全屏背景图 (无“海浪图”字样) -->
             <div class="flex flex-col gap-1.5">
                 <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
                     <i data-lucide="image" class="w-3.5 h-3.5"></i> 1. 全屏背景图片
@@ -198,16 +190,14 @@
                 </div>
             </div>
 
-            <!-- 多图素材批量/单图上传区 -->
+            <!-- 多图素材批量上传区 -->
             <div class="flex flex-col gap-1.5">
                 <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center justify-between">
                     <span class="flex items-center gap-1"><i data-lucide="images" class="w-3.5 h-3.5"></i> 3. 嵌套图片上传</span>
                     <label for="upload-story-grid-multi" class="text-[10px] text-[#8B7355] font-normal cursor-pointer underline">批量选择</label>
                     <input type="file" id="upload-story-grid-multi" accept="image/*" multiple class="hidden">
                 </span>
-                <div id="story-grid-upload-cells" class="grid grid-cols-4 gap-2">
-                    <!-- 动态生成 -->
-                </div>
+                <div id="story-grid-upload-cells" class="grid grid-cols-4 gap-2"></div>
             </div>
         </div>
 
@@ -218,12 +208,12 @@
             </span>
             <div class="bg-[#FAF6F0] p-3 rounded-2xl border border-[#EFEAE2] flex flex-col gap-3">
                 
-                <!-- 1. 日期模块 -->
+                <!-- 1. 日期模块 (带系统日历弹窗 & 多种风格切换) -->
                 <div class="flex flex-col gap-1.5">
                     <label class="text-[10px] font-semibold text-[#8B7355]">日期 (Date)</label>
                     <div class="flex gap-2">
                         <input type="date" id="input-date-val" class="flex-1 bg-white border border-[#EFEAE2] rounded-lg px-2 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
-                        <select id="input-date-format" class="w-24 bg-white border border-[#EFEAE2] rounded-lg px-2 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
+                        <select id="input-date-format" class="w-28 bg-white border border-[#EFEAE2] rounded-lg px-2 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
                             <option value="DD MMM YYYY">04 APR 2026</option>
                             <option value="YYYY.MM.DD">2026.04.04</option>
                             <option value="MM/DD/YYYY">04/04/2026</option>
@@ -232,34 +222,37 @@
                     </div>
                 </div>
 
-                <!-- 2. 自由文本与字体模块 -->
+                <!-- 2. 自由文字与多国字体模块 (中英日韩全支持) -->
                 <div class="flex flex-col gap-1.5 pt-2 border-t border-[#EFEAE2]/60">
-                    <label class="text-[10px] font-semibold text-[#8B7355]">自由文字 (Free Text)</label>
+                    <label class="text-[10px] font-semibold text-[#8B7355]">自由文字 (Free Text & Fonts)</label>
                     <div class="flex gap-2">
                         <input type="text" id="input-free-text" value="SHANGHAI // SEA & SUN" placeholder="输入任何文字..." class="flex-1 bg-white border border-[#EFEAE2] rounded-lg px-2.5 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
-                        <select id="input-font-family" class="w-24 bg-white border border-[#EFEAE2] rounded-lg px-1.5 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
+                        <select id="input-font-family" class="w-28 bg-white border border-[#EFEAE2] rounded-lg px-1 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]">
                             <option value="Cinzel">英·衬线体</option>
                             <option value="Playfair Display">英·手写体</option>
                             <option value="Noto Serif SC">中·思源宋</option>
-                            <option value="Noto Serif JP">日文·明朝</option>
-                            <option value="Noto Serif KR">韩文·宋体</option>
+                            <option value="Noto Serif JP">日·明朝体</option>
+                            <option value="Noto Serif KR">韩·宋体</option>
                             <option value="Inter">现代无衬线</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- 3. 文字样式：位置、大小、颜色、阴影 -->
+                <!-- 3. 文字位置预设与样式定制 -->
                 <div class="flex flex-col gap-2 pt-2 border-t border-[#EFEAE2]/60">
                     <div class="flex items-center justify-between text-[11px] font-medium text-[#4A3E3D]">
-                        <span>文字位置与大小 (可直接拖拽缩放)</span>
+                        <span>文字位置预设 (支持直接拖拽)</span>
                         <div class="flex gap-1">
-                            <button id="btn-text-pos-top" class="bg-white border border-zinc-200 px-1.5 py-0.5 rounded text-[10px] hover:bg-zinc-50">顶部</button>
-                            <button id="btn-text-pos-center" class="bg-white border border-zinc-200 px-1.5 py-0.5 rounded text-[10px] hover:bg-zinc-50">中央</button>
-                            <button id="btn-text-pos-bottom" class="bg-white border border-zinc-200 px-1.5 py-0.5 rounded text-[10px] hover:bg-zinc-50">底部</button>
+                            <button id="btn-text-pos-top" class="bg-white border border-zinc-200 px-2 py-0.5 rounded text-[10px] hover:bg-zinc-50">顶部</button>
+                            <button id="btn-text-pos-center" class="bg-white border border-zinc-200 px-2 py-0.5 rounded text-[10px] hover:bg-zinc-50">中央</button>
+                            <button id="btn-text-pos-bottom" class="bg-white border border-zinc-200 px-2 py-0.5 rounded text-[10px] hover:bg-zinc-50">底部</button>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="input-text-color" value="#FFFFFF" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent" title="文字颜色">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-zinc-400">颜色</span>
+                            <input type="color" id="input-text-color" value="#FFFFFF" class="w-6 h-6 rounded border-0 cursor-pointer bg-transparent">
+                        </div>
                         <div class="flex-1 flex items-center gap-2">
                             <span class="text-[10px] text-zinc-400">阴影</span>
                             <input type="range" id="input-text-shadow" min="0" max="20" value="6" class="flex-1 h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
@@ -280,9 +273,9 @@
             <div class="flex items-center justify-between bg-[#FAF6F0] p-2 rounded-2xl border border-[#EFEAE2]">
                 <span class="text-[11px] text-[#4A3E3D] font-medium ml-1">画幅比例</span>
                 <div class="flex gap-1">
-                    <button data-ratio="1-1" class="btn-ratio px-2 py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-bold transition-all cream-button">1:1</button>
-                    <button data-ratio="3-4" class="btn-ratio px-2 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4</button>
-                    <button data-ratio="9-16" class="btn-ratio px-2 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">9:16</button>
+                    <button data-ratio="1-1" class="btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">1:1</button>
+                    <button data-ratio="3-4" class="btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4</button>
+                    <button data-ratio="9-16" class="btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm">9:16</button>
                 </div>
             </div>
 
@@ -295,7 +288,7 @@
                 <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
                 
                 <!-- 宫格间距 -->
-                <div id="row-grid-gap" class="border-t border-[#EFEAE2]/60 pt-2 flex flex-col gap-1.5 hidden">
+                <div id="row-grid-gap" class="border-t border-[#EFEAE2]/60 pt-2 flex flex-col gap-1.5">
                     <div class="flex justify-between text-[11px] text-[#4A3E3D] font-medium">
                         <span>图片缝隙间距 (Gap)</span>
                         <span id="grid-gap-val" class="text-[#8B7355] font-bold">2px</span>
@@ -359,8 +352,8 @@
             </button>
         </div>
 
-        <!-- 手绘奶油插图垫底 -->
-        <div class="mt-4 flex flex-col items-center justify-center gap-2 py-4 border-t border-[#FAF1E6] shrink-0 pb-16">
+        <!-- 底部插图 -->
+        <div class="mt-4 flex flex-col items-center justify-center gap-2 py-4 border-t border-[#FAF1E6] shrink-0 pb-12">
             <svg class="w-40 h-16 text-[#8B7355]/30 fill-current opacity-80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 25,50 C 25,40 35,35 45,40 C 50,30 65,30 70,40 C 80,40 85,48 75,55 C 75,55 25,55 25,50 Z" />
                 <path d="M 125,45 C 125,37 133,32 143,37 C 148,27 163,27 168,37 C 178,37 183,45 173,52 C 173,52 125,52 125,45 Z" />
@@ -402,12 +395,11 @@
     </div>
 
     <script>
-        // --- 日期格式化辅助函数 ---
+        // --- 日期格式化辅助 ---
         function formatStoryDate(dateStr, format) {
             if (!dateStr) return "";
             const d = new Date(dateStr);
             if (isNaN(d)) return "";
-            
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const dd = String(d.getDate()).padStart(2, '0');
@@ -422,7 +414,7 @@
         }
 
         // ----------------------------------------------------
-        // 1. Single Source of Truth: 数据状态模型 (state)
+        // 1. 核心状态模型 (State)
         // ----------------------------------------------------
         const state = {
             mode: 'story', // 'inverse' | 'story'
@@ -433,18 +425,17 @@
             grainOpacity: 0.06, 
             borderWidth: 0, 
             borderColor: '#FFFFFF',
-            activeLayer: 'typography', // 默认选中文字层
+            activeLayer: 'typography',
 
-            // 文字排版物理引擎属性
             typography: {
-                dateRaw: new Date().toISOString().split('T')[0], // 默认今天
+                dateRaw: new Date().toISOString().split('T')[0],
                 dateFormat: 'DD MMM YYYY',
                 text: 'SHANGHAI // SEA & SUN',
                 fontFamily: 'Cinzel',
-                fontSize: 12, // 画布宽度的百分比
+                fontSize: 12,
                 color: '#FFFFFF',
-                shadowBlur: 6, // 阴影半径
-                offset: { x: 50, y: 85 } // % 坐标
+                shadowBlur: 6,
+                offset: { x: 50, y: 85 }
             },
 
             inverse: {
@@ -471,7 +462,7 @@
         };
 
         // ----------------------------------------------------
-        // 2. SceneRenderer (核心渲染引擎：包括字体与多图网格)
+        // 2. 核心渲染引擎 (SceneRenderer)
         // ----------------------------------------------------
         const SceneRenderer = {
             drawScene(ctx, stateData, width, height, options = { isExport: false, showGrid: false }) {
@@ -485,10 +476,8 @@
                     this.drawStoryScene(ctx, stateData, width, height, options);
                 }
 
-                // 绘制全局排版文字
                 this.drawTypography(ctx, stateData, width, height, options);
 
-                // 叠加胶片颗粒
                 if (stateData.grainOpacity > 0) {
                     ctx.save();
                     ctx.fillStyle = `rgba(255, 255, 255, ${stateData.grainOpacity / 1.5})`;
@@ -512,17 +501,13 @@
                 } else {
                     drawW = w * scale; drawH = w / imgRatio * scale;
                 }
-
                 drawX = x + (w - drawW) * (offset.x / 100);
                 drawY = y + (h - drawH) * (offset.y / 100);
                 ctx.drawImage(img, drawX, drawY, drawW, drawH);
             },
 
-            // 模式 1：镜像互换渲染
             drawInverseScene(ctx, stateData, width, height, options) {
-                const midY = height / 2;
-                const inv = stateData.inverse;
-
+                const midY = height / 2; const inv = stateData.inverse;
                 ctx.save(); ctx.beginPath(); ctx.rect(0, 0, width, midY); ctx.clip();
                 this.drawLayerImage(ctx, inv[inv.layers.topBg.imgKey], 0, 0, width, midY, inv.layers.topBg.offset, inv.layers.topBg.scale);
                 ctx.restore();
@@ -535,21 +520,15 @@
                 const radiusPx = stateData.radius * (width / 320); 
                 const borderPx = stateData.borderWidth * (width / 320); 
 
-                const topBoxX = width / 2 - boxSize / 2;
-                const topBoxY = midY / 2 - boxSize / 2;
+                const topBoxX = width / 2 - boxSize / 2; const topBoxY = midY / 2 - boxSize / 2;
                 this.drawNestedBox(ctx, inv[inv.layers.topFg.imgKey], topBoxX, topBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.topFg.offset, inv.layers.topFg.scale, width);
 
-                const bottomBoxX = width / 2 - boxSize / 2;
-                const bottomBoxY = midY + (midY / 2) - boxSize / 2;
+                const bottomBoxX = width / 2 - boxSize / 2; const bottomBoxY = midY + (midY / 2) - boxSize / 2;
                 this.drawNestedBox(ctx, inv[inv.layers.bottomFg.imgKey], bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.bottomFg.offset, inv.layers.bottomFg.scale, width);
-
-                if (!options.isExport) this.drawHighlights(ctx, stateData, width, height, options.showGrid, boxSize, radiusPx, topBoxX, topBoxY, bottomBoxX, bottomBoxY, midY);
             },
 
-            // 模式 2：Ins Story 渲染
             drawStoryScene(ctx, stateData, width, height, options) {
                 const st = stateData.story;
-
                 if (st.bgImage) {
                     ctx.save();
                     this.drawLayerImage(ctx, st.bgImage, 0, 0, width, height, st.bgOffset, st.bgScale);
@@ -584,10 +563,6 @@
                         cellIndex++;
                     }
                 }
-
-                if (!options.isExport) {
-                    this.drawStoryHighlights(ctx, stateData, width, height, gridStartX, gridStartY, cols, rows, cellW, cellH, gapPx, radiusPx, options.showGrid);
-                }
             },
 
             drawNestedBox(ctx, img, x, y, w, h, radiusPx, borderPx, borderColor, offset, scale, canvasWidth) {
@@ -596,16 +571,12 @@
                 ctx.shadowBlur = 30 * (canvasWidth / 1200);
                 ctx.shadowOffsetY = 8 * (canvasWidth / 1200);
                 ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
-                ctx.fill();
+                ctx.beginPath(); this.drawRoundedPath(ctx, x, y, w, h, radiusPx); ctx.fill();
                 ctx.restore();
 
                 if (img) {
                     ctx.save();
-                    ctx.beginPath();
-                    this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
-                    ctx.clip();
+                    ctx.beginPath(); this.drawRoundedPath(ctx, x, y, w, h, radiusPx); ctx.clip();
                     this.drawLayerImage(ctx, img, x, y, w, h, offset, scale);
                     ctx.restore();
                 }
@@ -613,19 +584,15 @@
                 if (borderPx > 0) {
                     ctx.save();
                     ctx.strokeStyle = borderColor; ctx.lineWidth = borderPx;
-                    ctx.beginPath();
-                    this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
-                    ctx.stroke();
+                    ctx.beginPath(); this.drawRoundedPath(ctx, x, y, w, h, radiusPx); ctx.stroke();
                     ctx.restore();
                 }
             },
 
-            // 文字排版绘制与高亮
             drawTypography(ctx, stateData, width, height, options) {
                 const typo = stateData.typography;
                 const dateStr = formatStoryDate(typo.dateRaw, typo.dateFormat);
                 const fullText = (dateStr ? dateStr + (typo.text ? '\n' + typo.text : '') : typo.text);
-                
                 if (!fullText) return;
 
                 const lines = fullText.split('\n');
@@ -635,8 +602,7 @@
                 const textY = height * (typo.offset.y / 100);
 
                 ctx.save();
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 
                 if (typo.shadowBlur > 0) {
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
@@ -645,91 +611,24 @@
                 }
 
                 ctx.fillStyle = typo.color;
-                
                 const startY = textY - (lines.length - 1) * lineH / 2;
+                
                 lines.forEach((line, index) => {
-                    // 日期使用较小的字号和追踪间距，正文使用用户字号
                     if (index === 0 && dateStr) {
                         ctx.font = `600 ${baseFontSize * 0.75}px "Cinzel", "Inter", serif`;
-                        ctx.letterSpacing = `${width * 0.008}px`; // Canvas letterSpacing support
                     } else {
                         ctx.font = `500 ${baseFontSize}px "${typo.fontFamily}", "Inter", sans-serif`;
-                        ctx.letterSpacing = `${width * 0.002}px`;
                     }
                     ctx.fillText(line, textX, startY + index * lineH);
                 });
 
-                // 绘制选中高亮框
+                // 文字选中高亮框
                 if (!options.isExport && stateData.activeLayer === 'typography') {
                     ctx.shadowColor = 'transparent';
-                    ctx.strokeStyle = '#8B7355';
-                    ctx.lineWidth = 1.5;
-                    ctx.setLineDash([4, 4]);
-                    // 粗略计算包围盒
-                    const boxW = baseFontSize * 10; 
-                    const boxH = lines.length * lineH + baseFontSize;
+                    ctx.strokeStyle = '#8B7355'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                    const boxW = baseFontSize * 12; const boxH = lines.length * lineH + baseFontSize;
                     ctx.strokeRect(textX - boxW/2, textY - boxH/2, boxW, boxH);
                 }
-
-                ctx.restore();
-            },
-
-            drawHighlights(ctx, stateData, width, height, showGrid, boxSize, radiusPx, topBoxX, topBoxY, bottomBoxX, bottomBoxY, midY) {
-                const active = stateData.activeLayer;
-                if(active === 'typography') return;
-
-                let rect = { x: 0, y: 0, w: width, h: midY };
-                if (active === 'topBg') rect = { x: 0, y: 0, w: width, h: midY };
-                else if (active === 'bottomBg') rect = { x: 0, y: midY, w: width, h: midY };
-                else if (active === 'topFg') rect = { x: topBoxX, y: topBoxY, w: boxSize, h: boxSize };
-                else if (active === 'bottomFg') rect = { x: bottomBoxX, y: bottomBoxY, w: boxSize, h: boxSize };
-
-                ctx.save();
-                ctx.strokeStyle = '#8B7355'; ctx.lineWidth = 2;
-                ctx.beginPath();
-                if (active === 'topFg' || active === 'bottomFg') this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
-                else ctx.rect(rect.x, rect.y, rect.w, rect.h);
-                ctx.stroke();
-                ctx.restore();
-
-                if (showGrid) this.drawThirdsGrid(ctx, rect, active === 'topFg' || active === 'bottomFg', radiusPx);
-            },
-
-            drawStoryHighlights(ctx, stateData, width, height, gridStartX, gridStartY, cols, rows, cellW, cellH, gapPx, radiusPx, showGrid) {
-                const active = stateData.activeLayer;
-                if(active === 'typography') return;
-
-                ctx.save();
-                ctx.strokeStyle = '#8B7355'; ctx.lineWidth = 2;
-
-                if (active === 'storyBg') {
-                    ctx.strokeRect(0, 0, width, height);
-                    if (showGrid) this.drawThirdsGrid(ctx, { x: 0, y: 0, w: width, h: height }, false, 0);
-                } else if (active.startsWith('storyCell_')) {
-                    const idx = parseInt(active.replace('storyCell_', ''));
-                    const r = Math.floor(idx / cols);
-                    const c = idx % cols;
-                    const cellX = gridStartX + c * (cellW + gapPx);
-                    const cellY = gridStartY + r * (cellH + gapPx);
-
-                    ctx.beginPath();
-                    this.drawRoundedPath(ctx, cellX, cellY, cellW, cellH, radiusPx);
-                    ctx.stroke();
-                    if (showGrid) this.drawThirdsGrid(ctx, { x: cellX, y: cellY, w: cellW, h: cellH }, true, radiusPx);
-                }
-                ctx.restore();
-            },
-
-            drawThirdsGrid(ctx, rect, isRounded, radiusPx) {
-                ctx.save();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                if (isRounded) { this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx); ctx.clip(); }
-                ctx.moveTo(rect.x + rect.w / 3, rect.y); ctx.lineTo(rect.x + rect.w / 3, rect.y + rect.h);
-                ctx.moveTo(rect.x + (rect.w * 2) / 3, rect.y); ctx.lineTo(rect.x + (rect.w * 2) / 3, rect.y + rect.h);
-                ctx.moveTo(rect.x, rect.y + rect.h / 3); ctx.lineTo(rect.x + rect.w, rect.y + rect.h / 3);
-                ctx.moveTo(rect.x, rect.y + (rect.h * 2) / 3); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h * 2) / 3);
-                ctx.stroke();
                 ctx.restore();
             },
 
@@ -745,23 +644,22 @@
         };
 
         // ----------------------------------------------------
-        // 3. Renderer (驱动 Preview Canvas)
+        // 3. 视图渲染驱动 (Renderer)
         // ----------------------------------------------------
         const Renderer = {
-            previewCanvas: null,
-            ctx: null,
+            previewCanvas: null, ctx: null,
             init() {
                 this.previewCanvas = document.getElementById('preview-canvas');
                 this.ctx = this.previewCanvas.getContext('2d');
             },
-            renderPreview(showGrid = false) {
+            renderPreview() {
                 const ws = document.getElementById('workspace');
                 const dpr = window.devicePixelRatio || 1;
                 const rect = ws.getBoundingClientRect();
                 this.previewCanvas.width = rect.width * dpr;
                 this.previewCanvas.height = rect.height * dpr;
 
-                SceneRenderer.drawScene(this.ctx, state, this.previewCanvas.width, this.previewCanvas.height, { isExport: false, showGrid });
+                SceneRenderer.drawScene(this.ctx, state, this.previewCanvas.width, this.previewCanvas.height, { isExport: false, showGrid: false });
 
                 const placeholder = document.getElementById('workspace-placeholder');
                 let hasImages = (state.mode === 'inverse') ? !!(state.inverse.imageA && state.inverse.imageB) : !!(state.story.bgImage || state.story.gridImages.some(img => img !== null));
@@ -771,26 +669,19 @@
         };
 
         // ----------------------------------------------------
-        // 4. GestureManager (含文本的碰撞检测与阻尼运算)
+        // 4. 手势与触摸控制管理器 (GestureManager)
         // ----------------------------------------------------
         const GestureManager = {
             startX: 0, startY: 0, initialOffset: { x: 50, y: 50 }, startDistance: 0, initialScale: 1.0, isDragging: false,
             init() { this.bindGestures(); },
             setActiveLayer(layer) {
                 state.activeLayer = layer;
-                let title = "当前图层";
-                
-                if (layer === 'typography') {
-                    title = "排版文字层";
-                } else if (state.mode === 'inverse') {
-                    const transMap = { 'topBg': '上背景 (图A)', 'topFg': '上嵌套 (图B)', 'bottomBg': '下背景 (图B)', 'bottomFg': '下嵌套 (图A)' };
-                    title = transMap[layer] || '未选中';
-                } else if (state.mode === 'story') {
-                    if (layer === 'storyBg') title = "全屏背景图";
-                    else if (layer.startsWith('storyCell_')) title = `宫格图片 #${parseInt(layer.replace('storyCell_', '')) + 1}`;
-                }
+                let title = "文字层";
+                if (layer === 'typography') title = "文字排版层";
+                else if (layer === 'storyBg') title = "全屏背景图";
+                else if (layer.startsWith('storyCell_')) title = `宫格图 #${parseInt(layer.replace('storyCell_', '')) + 1}`;
                 document.getElementById('active-layer-indicator').textContent = title;
-                Renderer.renderPreview(false);
+                Renderer.renderPreview();
             },
             getTouchDistance(touches) {
                 const dx = touches[0].clientX - touches[1].clientX; const dy = touches[0].clientY - touches[1].clientY;
@@ -802,20 +693,11 @@
                 const x = touchX - rect.left; const y = touchY - rect.top;
                 const w = rect.width; const h = rect.height;
 
-                // 优先检测文字层碰撞区 (宽泛命中)
                 const textX = w * (state.typography.offset.x / 100);
                 const textY = h * (state.typography.offset.y / 100);
-                if (Math.abs(x - textX) < 100 && Math.abs(y - textY) < 60) return 'typography';
+                if (Math.abs(x - textX) < 120 && Math.abs(y - textY) < 60) return 'typography';
 
-                if (state.mode === 'inverse') {
-                    const midY = h / 2; const boxSize = w * (state.centerSize / 100);
-                    const topBoxX = w / 2 - boxSize / 2; const topBoxY = midY / 2 - boxSize / 2;
-                    const bottomBoxX = w / 2 - boxSize / 2; const bottomBoxY = midY + (midY / 2) - boxSize / 2;
-                    if (x >= topBoxX && x <= topBoxX + boxSize && y >= topBoxY && y <= topBoxY + boxSize) return 'topFg';
-                    if (x >= bottomBoxX && x <= bottomBoxX + boxSize && y >= bottomBoxY && y <= bottomBoxY + boxSize) return 'bottomFg';
-                    if (y < midY) return 'topBg';
-                    return 'bottomBg';
-                } else {
+                if (state.mode === 'story') {
                     const st = state.story; const gridAreaW = w * (state.centerSize / 100); const gapPx = state.gridGap * (w / 320);
                     let cols = 2, rows = 2;
                     if (st.layout === '1') { cols = 1; rows = 1; } else if (st.layout === '2-v') { cols = 1; rows = 2; } else if (st.layout === '2-3') { cols = 2; rows = 3; }
@@ -832,19 +714,18 @@
                     }
                     return 'storyBg';
                 }
+                return 'typography';
             },
             getActiveLayerTarget() {
                 const layer = state.activeLayer;
                 if (layer === 'typography') return { offset: state.typography.offset, get scale() { return state.typography.fontSize / 12; }, set scale(v) { state.typography.fontSize = v * 12; } };
-                if (state.mode === 'inverse') return state.inverse.layers[layer];
                 if (layer === 'storyBg') return { offset: state.story.bgOffset, get scale() { return state.story.bgScale; }, set scale(v) { state.story.bgScale = v; } };
-                if (layer.startsWith('storyCell_')) return state.story.gridLayers[parseInt(layer.replace('storyCell_', ''))];
+                if (layer && layer.startsWith('storyCell_')) return state.story.gridLayers[parseInt(layer.replace('storyCell_', ''))];
                 return null;
             },
             bindGestures() {
                 const canvas = Renderer.previewCanvas;
                 const onStart = (e) => {
-                    if (e.cancelable) e.preventDefault();
                     const pt = e.touches ? e.touches[0] : e;
                     const targetLayer = this.detectLayerFromCoords(pt.clientX, pt.clientY);
                     this.setActiveLayer(targetLayer);
@@ -859,11 +740,9 @@
                     }
                     this.startX = pt.clientX; this.startY = pt.clientY;
                     this.initialOffset = { ...layerTarget.offset };
-                    Renderer.renderPreview(true);
                 };
                 const onMove = (e) => {
                     if (!this.isDragging) return;
-                    if (e.cancelable) e.preventDefault();
                     const layerTarget = this.getActiveLayerTarget();
                     if (!layerTarget) return;
 
@@ -872,16 +751,15 @@
                         if (this.startDistance > 0) {
                             layerTarget.scale = Math.max(0.5, Math.min(6.0, this.initialScale * (dist / this.startDistance)));
                         }
-                        Renderer.renderPreview(true); return;
+                        Renderer.renderPreview(); return;
                     }
                     const pt = e.touches ? e.touches[0] : e;
                     const dx = pt.clientX - this.startX; const dy = pt.clientY - this.startY;
                     const wsW = parseFloat(document.getElementById('workspace').style.width || 320);
-                    
+
                     let chgX, chgY;
                     if (state.activeLayer === 'typography') {
-                        // 文字层直接绝对位移
-                        chgX = -(dx / wsW) * 100; chgY = -(dy / (wsW*1.7)) * 100;
+                        chgX = -(dx / wsW) * 100; chgY = -(dy / (wsW * 1.7)) * 100;
                     } else {
                         chgX = (dx / (wsW * 0.8)) * 100 / layerTarget.scale;
                         chgY = (dy / (wsW * 0.4)) * 100 / layerTarget.scale;
@@ -889,34 +767,36 @@
 
                     layerTarget.offset.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
                     layerTarget.offset.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
-                    Renderer.renderPreview(true);
+                    Renderer.renderPreview();
                 };
-                const onEnd = () => { if (this.isDragging) { this.isDragging = false; Renderer.renderPreview(false); Storage.autoSave(); } };
+                const onEnd = () => { if (this.isDragging) { this.isDragging = false; Renderer.renderPreview(); } };
                 const onWheel = (e) => {
                     e.preventDefault();
                     const targetLayer = this.detectLayerFromCoords(e.clientX, e.clientY);
                     this.setActiveLayer(targetLayer);
                     const layerTarget = this.getActiveLayerTarget();
-                    if (layerTarget) { layerTarget.scale = Math.max(0.5, Math.min(6.0, layerTarget.scale - e.deltaY * 0.0015)); Storage.autoSave(); Renderer.renderPreview(false); }
+                    if (layerTarget) { layerTarget.scale = Math.max(0.5, Math.min(6.0, layerTarget.scale - e.deltaY * 0.0015)); Renderer.renderPreview(); }
                 };
-                canvas.addEventListener('mousedown', onStart); canvas.addEventListener('touchstart', onStart, { passive: false }); canvas.addEventListener('wheel', onWheel, { passive: false });
-                window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove, { passive: false }); window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
+
+                canvas.addEventListener('mousedown', onStart); canvas.addEventListener('touchstart', onStart, { passive: true }); canvas.addEventListener('wheel', onWheel, { passive: false });
+                window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove, { passive: true }); window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
             }
         };
 
         // ----------------------------------------------------
-        // 5. ExportEngine (保存大图)
+        // 5. 导出渲染引擎 (ExportEngine)
         // ----------------------------------------------------
         const ExportEngine = {
             async generate() {
                 await new Promise(requestAnimationFrame);
                 const btnDownload = document.getElementById('btn-download');
                 const origHTML = btnDownload.innerHTML;
-                btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">超清美学渲染中...</span>`;
+                btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清海报渲染中...</span>`;
                 lucide.createIcons();
 
-                let outW = 1600; let outH = 1600;
-                if (state.ratio === '3-4') { outW = 1600; outH = 2133; } else if (state.ratio === '9-16') { outW = 1440; outH = 2560; }
+                let outW = 1440; let outH = 2560;
+                if (state.ratio === '1-1') { outW = 1600; outH = 1600; }
+                else if (state.ratio === '3-4') { outW = 1600; outH = 2133; }
 
                 const exportCanvas = document.getElementById('export-canvas');
                 exportCanvas.width = outW; exportCanvas.height = outH;
@@ -944,7 +824,7 @@
         };
 
         // ----------------------------------------------------
-        // 6. LayerManager & Storage
+        // 6. 逻辑管理器 (LayerManager)
         // ----------------------------------------------------
         const LayerManager = {
             setMode(mode) {
@@ -953,17 +833,28 @@
                     if (btn.dataset.mode === mode) btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5";
                     else btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
                 });
-                if (mode === 'inverse') { document.getElementById('panel-inverse-controls').classList.remove('hidden'); document.getElementById('panel-story-controls').classList.add('hidden'); document.getElementById('row-grid-gap').classList.add('hidden'); GestureManager.setActiveLayer('topBg'); } 
-                else { document.getElementById('panel-inverse-controls').classList.add('hidden'); document.getElementById('panel-story-controls').classList.remove('hidden'); document.getElementById('row-grid-gap').classList.remove('hidden'); this.setRatio('9-16'); this.rebuildStoryGridUploadCells(); GestureManager.setActiveLayer('storyBg'); }
-                Renderer.renderPreview(false); Storage.autoSave();
+                if (mode === 'inverse') {
+                    document.getElementById('panel-inverse-controls').classList.remove('hidden');
+                    document.getElementById('panel-story-controls').classList.add('hidden');
+                    document.getElementById('row-grid-gap').classList.add('hidden');
+                    GestureManager.setActiveLayer('topBg');
+                } else {
+                    document.getElementById('panel-inverse-controls').classList.add('hidden');
+                    document.getElementById('panel-story-controls').classList.remove('hidden');
+                    document.getElementById('row-grid-gap').classList.remove('hidden');
+                    this.setRatio('9-16');
+                    this.rebuildStoryGridUploadCells();
+                    GestureManager.setActiveLayer('storyBg');
+                }
+                Renderer.renderPreview();
             },
             setRatio(ratio) {
                 state.ratio = ratio; this.adaptWorkspaceScale();
                 document.querySelectorAll('.btn-ratio').forEach(btn => {
-                    if (btn.dataset.ratio === ratio) btn.className = "btn-ratio px-2 py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-bold transition-all cream-button";
-                    else btn.className = "btn-ratio px-2 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button";
+                    if (btn.dataset.ratio === ratio) btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm";
+                    else btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button";
                 });
-                Renderer.renderPreview(false); Storage.autoSave();
+                Renderer.renderPreview();
             },
             setStoryLayout(layout) {
                 state.story.layout = layout;
@@ -971,7 +862,7 @@
                     if (btn.dataset.layout === layout) btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] text-white font-bold shadow-sm";
                     else btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] font-medium";
                 });
-                this.rebuildStoryGridUploadCells(); Renderer.renderPreview(false); Storage.autoSave();
+                this.rebuildStoryGridUploadCells(); Renderer.renderPreview();
             },
             rebuildStoryGridUploadCells() {
                 const container = document.getElementById('story-grid-upload-cells'); container.innerHTML = '';
@@ -983,14 +874,14 @@
                     container.appendChild(cell);
                     document.getElementById(`upload-story-grid-${i}`).addEventListener('change', (e) => {
                         const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[i] = img; this.rebuildStoryGridUploadCells(); GestureManager.setActiveLayer(`storyCell_${i}`); Renderer.renderPreview(false); Storage.autoSave(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[i] = img; this.rebuildStoryGridUploadCells(); GestureManager.setActiveLayer(`storyCell_${i}`); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                     });
                 }
                 lucide.createIcons();
             },
             adaptWorkspaceScale() {
                 const ws = document.getElementById('workspace'); const container = ws.parentElement;
-                let tw = 400, th = 400; if (state.ratio === '3-4') { tw = 360; th = 480; } else if (state.ratio === '9-16') { tw = 320; th = 568; }
+                let tw = 320, th = 568; if (state.ratio === '1-1') { tw = 400; th = 400; } else if (state.ratio === '3-4') { tw = 360; th = 480; }
                 const scale = Math.min((container.clientWidth - 24) / tw, (container.clientHeight - 24) / th, 1);
                 ws.style.width = `${tw * scale}px`; ws.style.height = `${th * scale}px`;
             },
@@ -1002,41 +893,38 @@
                 const sampleBg = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80";
                 const samples = ["https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=500&q=80"];
                 
-                let loaded = 0; const check = () => { loaded++; if (loaded === 5) { this.rebuildStoryGridUploadCells(); Renderer.renderPreview(false); } };
+                let loaded = 0; const check = () => { loaded++; if (loaded === 5) { this.rebuildStoryGridUploadCells(); Renderer.renderPreview(); } };
                 const bgImg = new Image(); bgImg.crossOrigin = "anonymous"; bgImg.onload = () => { state.story.bgImage = bgImg; document.getElementById('story-bg-status').textContent = "已就绪"; check(); }; bgImg.src = sampleBg;
                 samples.forEach((src, i) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => { state.story.gridImages[i] = img; check(); }; img.src = src; });
             }
         };
 
-        const Storage = {
-            autoSave() { }, // 避免草稿箱引发复杂的图片丢失问题，暂不主动存 Blob
-            loadDraft() { LayerManager.setMode('story'); document.getElementById('input-date-val').value = state.typography.dateRaw; }
-        };
-
         // ----------------------------------------------------
-        // 8. EventManager (表单事件)
+        // 7. 事件管理器 (EventManager)
         // ----------------------------------------------------
         const EventManager = {
             bindEvents() {
                 document.querySelectorAll('.btn-mode').forEach(btn => btn.addEventListener('click', () => LayerManager.setMode(btn.dataset.mode)));
-                ['upload-a', 'upload-b'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
-                    const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                    reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.inverse[id==='upload-a'?'imageA':'imageB'] = img; document.getElementById(id==='upload-a'?'img-thumb-a':'img-thumb-b').src = ev.target.result; document.getElementById(id==='upload-a'?'preview-container-a':'preview-container-b').classList.remove('hidden'); document.getElementById(id==='upload-a'?'placeholder-a':'placeholder-b').classList.add('hidden'); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
-                }));
+                
                 document.getElementById('upload-story-bg').addEventListener('change', (e) => {
                     const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
                     reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.bgImage = img; document.getElementById('story-bg-status').textContent = "已就绪"; GestureManager.setActiveLayer('storyBg'); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                 });
+
                 document.getElementById('upload-story-grid-multi').addEventListener('change', (e) => {
                     const files = Array.from(e.target.files); if (!files.length) return; let loaded = 0;
-                    files.forEach((file, index) => { if (index >= 6) return; const reader = new FileReader(); reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[index] = img; loaded++; if (loaded === Math.min(files.length, 6)) { LayerManager.rebuildStoryGridUploadCells(); Renderer.renderPreview(); } }; img.src = ev.target.result; }; reader.readAsDataURL(file); });
+                    files.forEach((file, index) => {
+                        if (index >= 6) return; const reader = new FileReader();
+                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[index] = img; loaded++; if (loaded === Math.min(files.length, 6)) { LayerManager.rebuildStoryGridUploadCells(); Renderer.renderPreview(); } }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                    });
                 });
+
                 document.querySelectorAll('.btn-story-layout').forEach(btn => btn.addEventListener('click', () => LayerManager.setStoryLayout(btn.dataset.layout)));
                 document.getElementById('btn-sample-assets').addEventListener('click', () => LayerManager.loadSampleAssets());
                 document.getElementById('btn-sample-assets-pc').addEventListener('click', () => LayerManager.loadSampleAssets());
                 document.querySelectorAll('.btn-ratio').forEach(btn => btn.addEventListener('click', () => LayerManager.setRatio(btn.dataset.ratio)));
                 
-                // Typography 文本绑定
+                // 文本排版控制绑定
                 document.getElementById('input-date-val').addEventListener('change', (e) => { state.typography.dateRaw = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-date-format').addEventListener('change', (e) => { state.typography.dateFormat = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-free-text').addEventListener('input', (e) => { state.typography.text = e.target.value; Renderer.renderPreview(); });
@@ -1044,7 +932,7 @@
                 document.getElementById('input-text-color').addEventListener('input', (e) => { state.typography.color = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-text-shadow').addEventListener('input', (e) => { state.typography.shadowBlur = parseInt(e.target.value); Renderer.renderPreview(); });
                 
-                // 预设位置按钮
+                // 位置预设
                 document.getElementById('btn-text-pos-top').addEventListener('click', () => { state.typography.offset.y = 15; state.typography.offset.x = 50; GestureManager.setActiveLayer('typography'); Renderer.renderPreview(); });
                 document.getElementById('btn-text-pos-center').addEventListener('click', () => { state.typography.offset.y = 50; state.typography.offset.x = 50; GestureManager.setActiveLayer('typography'); Renderer.renderPreview(); });
                 document.getElementById('btn-text-pos-bottom').addEventListener('click', () => { state.typography.offset.y = 85; state.typography.offset.x = 50; GestureManager.setActiveLayer('typography'); Renderer.renderPreview(); });
@@ -1056,7 +944,7 @@
                 document.querySelectorAll('.btn-preset-color').forEach(btn => btn.addEventListener('click', () => { state.borderColor = btn.dataset.color; document.getElementById('input-border-color').value = state.borderColor; Renderer.renderPreview(); }));
                 document.getElementById('input-border-color').addEventListener('input', (e) => { state.borderColor = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-radius').addEventListener('input', (e) => { state.radius = parseInt(e.target.value); document.getElementById('radius-val').textContent = state.radius + 'px'; Renderer.renderPreview(); });
-                document.getElementById('input-grain').addEventListener('input', (e) => { state.grainOpacity = parseInt(e.target.value) / 100; document.getElementById('grain-val').textContent = state.grainOpacity * 100 + '%'; Theme.setGrainOpacity(state.grainOpacity); Renderer.renderPreview(); });
+                document.getElementById('input-grain').addEventListener('input', (e) => { state.grainOpacity = parseInt(e.target.value) / 100; document.getElementById('grain-val').textContent = state.grainOpacity * 100 + '%'; Renderer.renderPreview(); });
                 
                 document.getElementById('btn-download').addEventListener('click', () => ExportEngine.generate());
                 document.getElementById('btn-close-modal').addEventListener('click', () => document.getElementById('mobile-download-modal').classList.add('opacity-0', 'pointer-events-none'));
@@ -1065,11 +953,11 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            Theme.init(); Renderer.init(); GestureManager.init(); EventManager.bindEvents(); Storage.loadDraft();
+            Renderer.init(); GestureManager.init(); EventManager.bindEvents();
+            document.getElementById('input-date-val').value = state.typography.dateRaw;
             setTimeout(() => { LayerManager.adaptWorkspaceScale(); Renderer.renderPreview(); }, 100);
         });
     </script>
 </body>
 </html>
-
 
