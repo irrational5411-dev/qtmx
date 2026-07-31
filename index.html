@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad 互换嵌套美学排版生成器 V4</title>
+    <title>Riyad 互换与 Ins Story 美学排版生成器 V5</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -17,6 +17,10 @@
             color: #4A3E3D; /* 焦糖深咖文字 */
             -webkit-tap-highlight-color: transparent;
             touch-action: none; /* 完美接管手势 */
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
         }
 
         /* 奶油感按钮微动效 */
@@ -37,13 +41,13 @@
     <header class="lg:hidden shrink-0 bg-white/80 backdrop-blur-md border-b border-[#EFEAE2] px-4 py-3 flex items-center justify-between z-40">
         <div class="flex items-center gap-2">
             <span class="p-1.5 bg-[#8B7355] rounded-lg text-white">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <i data-lucide="camera" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v4.0</span>
+            <span class="text-sm font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.0</span>
         </div>
         <button id="btn-sample-assets" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
             <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
-            <span>美学样图</span>
+            <span>载入样图</span>
         </button>
     </header>
 
@@ -55,7 +59,7 @@
             <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] blur-[100px] bottom-1/4 right-1/4"></div>
         </div>
 
-        <div id="workspace" class="relative bg-white shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] overflow-hidden transition-all duration-300 flex items-center justify-center max-w-full max-h-full border border-[#EFEAE2]" style="width: 320px; height: 320px; border-radius: 12px;">
+        <div id="workspace" class="relative bg-white shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] overflow-hidden transition-all duration-300 flex items-center justify-center max-w-full max-h-full border border-[#EFEAE2]" style="width: 320px; height: 568px; border-radius: 12px;">
             
             <!-- 上传引导卡片 -->
             <div id="workspace-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6F0]/95 z-30 gap-3.5 text-center px-6 transition-opacity duration-300">
@@ -63,14 +67,14 @@
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 class="text-xs font-bold text-[#4A3E3D]">极简嵌套美学排版</h3>
+                    <h3 class="text-xs font-bold text-[#4A3E3D]">Riyad 美学排版生成器</h3>
                     <p class="text-[10px] text-zinc-500 mt-1 max-w-[200px] mx-auto leading-relaxed">
-                        在下方上传图片，双指捏合或滚轮直接缩放任意图层，拖拽对齐剪裁。
+                        支持“镜像互换”与“Ins Story 多图网格嵌套”，双指或滚轮缩放，自由拖拽排版。
                     </p>
                 </div>
             </div>
 
-            <!-- 实时预览 Canvas：所有绘制与导出 100% 共享 SceneRenderer 逻辑 -->
+            <!-- 实时预览 Canvas -->
             <canvas id="preview-canvas" class="w-full h-full cursor-move border-0 block"></canvas>
         </div>
     </div>
@@ -80,92 +84,176 @@
         
         <!-- 侧栏头部 -->
         <div class="hidden lg:block">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="p-1.5 bg-[#8B7355] rounded-xl text-white">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                </span>
-                <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD INVERSE v4.0</span>
+            <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 bg-[#8B7355] rounded-xl text-white">
+                        <i data-lucide="camera" class="w-4 h-4"></i>
+                    </span>
+                    <span class="text-base font-bold tracking-wider text-[#4A3E3D]">RIYAD STUDIO v5.0</span>
+                </div>
+                <button id="btn-sample-assets-pc" class="text-xs bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#8B7355] border border-[#8B7355]/30 px-3 py-1 rounded-full font-medium flex items-center gap-1 transition-all cream-button">
+                    <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                    <span>样图</span>
+                </button>
             </div>
-            <p class="text-[11px] text-zinc-400">“你中有我，我中有你” 镜像互换排版工具</p>
+            <p class="text-[11px] text-zinc-400">Ins 爆火排版 · 镜像互换与 Ins Story 多图嵌套</p>
             <hr class="border-[#EFEAE2] mt-4">
         </div>
 
-        <!-- 第一步：上传 -->
-        <div class="flex flex-col gap-2">
-            <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
-                <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> 1. 上传图片素材
-            </span>
-            <div class="grid grid-cols-2 gap-2.5">
-                <div class="relative">
-                    <input type="file" id="upload-a" accept="image/*" class="hidden">
-                    <label for="upload-a" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
-                        <div id="preview-container-a" class="absolute inset-0 w-full h-full hidden">
-                            <img id="img-thumb-a" class="w-full h-full object-cover">
-                        </div>
-                        <div id="placeholder-a" class="flex flex-col items-center justify-center text-center p-1">
-                            <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
-                            <span class="text-[11px] text-[#4A3E3D] font-medium">图 A (天空)</span>
-                        </div>
-                    </label>
-                </div>
-
-                <div class="relative">
-                    <input type="file" id="upload-b" accept="image/*" class="hidden">
-                    <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
-                        <div id="preview-container-b" class="absolute inset-0 w-full h-full hidden">
-                            <img id="img-thumb-b" class="w-full h-full object-cover">
-                        </div>
-                        <div id="placeholder-b" class="flex flex-col items-center justify-center text-center p-1">
-                            <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
-                            <span class="text-[11px] text-[#4A3E3D] font-medium">图 B (海洋)</span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- 第二步：比例 -->
+        <!-- 模式选择 Selector -->
         <div class="flex flex-col gap-1.5">
             <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
-                <i data-lucide="aspect-ratio" class="w-3.5 h-3.5"></i> 2. 整体画幅比例
+                <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 核心排版模式
             </span>
-            <div class="grid grid-cols-3 gap-1.5">
-                <button id="btn-ratio-1-1" data-ratio="1-1" class="btn-ratio py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm">1:1 正方形</button>
-                <button id="btn-ratio-3-4" data-ratio="3-4" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4 小红书</button>
-                <button id="btn-ratio-9-16" data-ratio="9-16" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">9:16 长图</button>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 镜像互换模式
+                </button>
+                <button id="mode-btn-story" data-mode="story" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Ins Story 多图嵌套
+                </button>
             </div>
         </div>
 
-        <!-- 第三步：细节参数 -->
+        <!-- 模式 A：镜像互换控制组 -->
+        <div id="panel-inverse-controls" class="flex flex-col gap-3">
+            <div class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
+                    <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> 上传素材 (双图)
+                </span>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="relative">
+                        <input type="file" id="upload-a" accept="image/*" class="hidden">
+                        <label for="upload-a" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
+                            <div id="preview-container-a" class="absolute inset-0 w-full h-full hidden">
+                                <img id="img-thumb-a" class="w-full h-full object-cover">
+                            </div>
+                            <div id="placeholder-a" class="flex flex-col items-center justify-center text-center p-1">
+                                <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
+                                <span class="text-[11px] text-[#4A3E3D] font-medium">图 A</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="file" id="upload-b" accept="image/*" class="hidden">
+                        <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
+                            <div id="preview-container-b" class="absolute inset-0 w-full h-full hidden">
+                                <img id="img-thumb-b" class="w-full h-full object-cover">
+                            </div>
+                            <div id="placeholder-b" class="flex flex-col items-center justify-center text-center p-1">
+                                <i data-lucide="plus" class="w-4 h-4 text-[#8B7355]"></i>
+                                <span class="text-[11px] text-[#4A3E3D] font-medium">图 B</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 画布比例 -->
+            <div class="flex flex-col gap-1.5">
+                <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
+                    <i data-lucide="aspect-ratio" class="w-3.5 h-3.5"></i> 画幅比例
+                </span>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button data-ratio="1-1" class="btn-ratio py-1.5 text-xs rounded-full bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm">1:1 正方形</button>
+                    <button data-ratio="3-4" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">3:4 小红书</button>
+                    <button data-ratio="9-16" class="btn-ratio py-1.5 text-xs rounded-full bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] transition-all cream-button">9:16 长图</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模式 B：Ins Story 多图嵌套控制组 -->
+        <div id="panel-story-controls" class="flex flex-col gap-3 hidden">
+            <!-- 上传全屏背景图 -->
+            <div class="flex flex-col gap-1.5">
+                <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> 1. 全屏背景图片 (如海浪/海水/天空)
+                </span>
+                <div class="relative">
+                    <input type="file" id="upload-story-bg" accept="image/*" class="hidden">
+                    <label for="upload-story-bg" class="flex items-center justify-between px-3 py-2 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0]">
+                        <span class="text-xs text-[#4A3E3D] font-medium flex items-center gap-2">
+                            <i data-lucide="upload" class="w-4 h-4 text-[#8B7355]"></i> 点击上传背景海浪图
+                        </span>
+                        <span id="story-bg-status" class="text-[10px] text-zinc-400">未选择</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 宫格布局类型 -->
+            <div class="flex flex-col gap-1.5">
+                <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
+                    <i data-lucide="grid-3x3" class="w-3.5 h-3.5"></i> 2. 中央拼图布局
+                </span>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button data-layout="1" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] font-medium">单图</button>
+                    <button data-layout="2-v" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] font-medium">双图列</button>
+                    <button data-layout="2-2" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] text-white font-bold shadow-sm">4宫格</button>
+                    <button data-layout="2-3" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] font-medium">6宫格</button>
+                </div>
+            </div>
+
+            <!-- 多图素材批量/单图上传区 -->
+            <div class="flex flex-col gap-1.5">
+                <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center justify-between">
+                    <span class="flex items-center gap-1"><i data-lucide="images" class="w-3.5 h-3.5"></i> 3. 嵌套图片上传</span>
+                    <label for="upload-story-grid-multi" class="text-[10px] text-[#8B7355] font-normal cursor-pointer underline">批量选择照片</label>
+                    <input type="file" id="upload-story-grid-multi" accept="image/*" multiple class="hidden">
+                </span>
+                <div id="story-grid-upload-cells" class="grid grid-cols-4 gap-2">
+                    <!-- 动态生成 1-6 个图的上传框 -->
+                </div>
+            </div>
+
+            <!-- 水印文本设置 -->
+            <div class="bg-[#FAF6F0] p-3 rounded-2xl border border-[#EFEAE2] flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-[#4A3E3D] flex items-center gap-1">
+                    <i data-lucide="type" class="w-3.5 h-3.5 text-[#8B7355]"></i> Ins 水印/日期标注
+                </span>
+                <input type="text" id="input-story-text" value="04 APR 2026" class="w-full bg-white border border-[#EFEAE2] rounded-lg px-2.5 py-1.5 text-xs text-[#4A3E3D] focus:outline-none focus:border-[#8B7355]" placeholder="输入日期或文字...">
+            </div>
+        </div>
+
+        <!-- 细节与尺寸微调 (通用) -->
         <div class="flex flex-col gap-2.5">
             <span class="text-[11px] font-bold text-[#8B7355] uppercase tracking-wider flex items-center gap-1">
-                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> 3. 细节与尺寸微调
+                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> 细节与尺寸微调
             </span>
 
             <!-- 嵌套尺寸与边框属性 -->
             <div class="bg-[#FAF6F0] p-3 rounded-2xl border border-[#EFEAE2] flex flex-col gap-2.5">
                 <div class="flex justify-between text-xs text-[#4A3E3D] mb-0.5 font-medium">
-                    <span>中心嵌套框大小 (Size)</span>
-                    <span id="center-size-val" class="text-[#8B7355] font-bold">35%</span>
+                    <span>中央嵌套区域大小 (Size)</span>
+                    <span id="center-size-val" class="text-[#8B7355] font-bold">55%</span>
                 </div>
-                <input type="range" id="input-center-size" min="20" max="60" value="35" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
+                <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
                 
+                <!-- 宫格间距 (仅在 Ins Story 模式生效) -->
+                <div id="row-grid-gap" class="border-t border-[#EFEAE2]/60 pt-2 flex flex-col gap-1.5 hidden">
+                    <div class="flex justify-between text-[11px] text-[#4A3E3D] font-medium">
+                        <span>图片缝隙间距 (Gap)</span>
+                        <span id="grid-gap-val" class="text-[#8B7355] font-bold">2px</span>
+                    </div>
+                    <input type="range" id="input-grid-gap" min="0" max="20" value="2" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
+                </div>
+
                 <!-- 边框厚度微调 -->
                 <div class="border-t border-[#EFEAE2]/60 pt-2 flex flex-col gap-1.5">
                     <div class="flex justify-between text-[11px] text-[#4A3E3D] font-medium">
                         <span>嵌套边框厚度 (Border)</span>
-                        <span id="border-width-val" class="text-[#8B7355] font-bold">1px</span>
+                        <span id="border-width-val" class="text-[#8B7355] font-bold">0px</span>
                     </div>
-                    <input type="range" id="input-border-width" min="0" max="16" value="1" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
+                    <input type="range" id="input-border-width" min="0" max="16" value="0" class="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#8B7355]">
                 </div>
 
                 <!-- 边框颜色选择 -->
                 <div class="flex items-center justify-between border-t border-[#EFEAE2]/60 pt-2">
                     <span class="text-[11px] text-[#4A3E3D] font-medium">嵌套边框颜色</span>
                     <div class="flex items-center gap-1.5">
-                        <button id="btn-color-white" data-color="#FFFFFF" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-white" title="奶白色"></button>
-                        <button id="btn-color-cream" data-color="#FAF6F0" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#FAF6F0]" title="米乳色"></button>
-                        <button id="btn-color-caramel" data-color="#4A3E3D" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#4A3E3D]" title="深焦糖"></button>
+                        <button data-color="#FFFFFF" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-white" title="奶白色"></button>
+                        <button data-color="#FAF6F0" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#FAF6F0]" title="米乳色"></button>
+                        <button data-color="#4A3E3D" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-[#4A3E3D]" title="深焦糖"></button>
                         <input type="color" id="input-border-color" value="#FFFFFF" class="w-5 h-5 rounded border-0 cursor-pointer bg-transparent">
                     </div>
                 </div>
@@ -175,20 +263,13 @@
             <div class="bg-[#FAF6F0] p-3 rounded-2xl border border-[#EFEAE2] flex flex-col gap-2">
                 <div class="flex justify-between items-center">
                     <span class="text-[11px] font-bold text-[#4A3E3D] flex items-center gap-1">
-                        <i data-lucide="layers-3" class="w-3.5 h-3.5 text-[#8B7355]"></i> 独立操控图层
+                        <i data-lucide="layers-3" class="w-3.5 h-3.5 text-[#8B7355]"></i> 当前操控图层
                     </span>
-                    <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] text-white font-bold">上背景 (图A)</span>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2 mt-1">
-                    <button id="tab-topBg" data-layer="topBg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all">上背景</button>
-                    <button id="tab-topFg" data-layer="topFg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">上嵌套</button>
-                    <button id="tab-bottomBg" data-layer="bottomBg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下背景</button>
-                    <button id="tab-bottomFg" data-layer="bottomFg" class="btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all">下嵌套</button>
+                    <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] text-white font-bold">背景图</span>
                 </div>
 
                 <!-- 选定图层的独立拉杆 -->
-                <div class="mt-2 pt-2 border-t border-[#EFEAE2]/60">
+                <div class="mt-1 pt-2 border-t border-[#EFEAE2]/60">
                     <div class="flex justify-between text-[11px] text-[#4A3E3D] mb-1 font-medium">
                         <span>所选图层缩放 (Scale)</span>
                         <span id="active-scale-val" class="text-[#8B7355] font-bold">1.0x</span>
@@ -271,151 +352,63 @@
         // 1. Single Source of Truth: 统一的数据状态模型 (state)
         // ----------------------------------------------------
         const state = {
-            imageA: null, // HTMLImageElement
-            imageB: null, // HTMLImageElement
+            mode: 'inverse', // 'inverse' | 'story'
             ratio: '1-1', 
-            centerSize: 35, // Percentage 20 - 60
+            centerSize: 35, 
+            gridGap: 2, // Ins Story 网格缝隙 (px)
             radius: 0, 
             grainOpacity: 0.06, 
-            borderWidth: 1, 
+            borderWidth: 0, 
             borderColor: '#FFFFFF',
-            activeLayer: 'topBg', // 'topBg' | 'topFg' | 'bottomBg' | 'bottomFg'
+            storyText: '04 APR 2026',
+            activeLayer: 'topBg', // 当前选中的图层 ID
 
-            // 图层标准字典映射 (精简数组化/字典化抽象)
-            layers: {
-                topBg:    { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 },
-                topFg:    { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
-                bottomBg: { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
-                bottomFg: { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 }
+            // 模式 1：Riyad 镜像互换模式的数据结构
+            inverse: {
+                imageA: null,
+                imageB: null,
+                layers: {
+                    topBg:    { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 },
+                    topFg:    { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
+                    bottomBg: { imgKey: 'imageB', offset: { x: 50, y: 50 }, scale: 1.0 },
+                    bottomFg: { imgKey: 'imageA', offset: { x: 50, y: 50 }, scale: 1.0 }
+                }
+            },
+
+            // 模式 2：Ins Story 多图网格嵌套的数据结构
+            story: {
+                bgImage: null, // 全屏背景图
+                bgOffset: { x: 50, y: 50 },
+                bgScale: 1.0,
+                layout: '2-2', // '1' | '2-v' | '2-2' | '2-3'
+                gridImages: [null, null, null, null, null, null], // 1-6 张嵌套图
+                gridLayers: [
+                    { offset: { x: 50, y: 50 }, scale: 1.0 },
+                    { offset: { x: 50, y: 50 }, scale: 1.0 },
+                    { offset: { x: 50, y: 50 }, scale: 1.0 },
+                    { offset: { x: 50, y: 50 }, scale: 1.0 },
+                    { offset: { x: 50, y: 50 }, scale: 1.0 },
+                    { offset: { x: 50, y: 50 }, scale: 1.0 }
+                ]
             }
         };
 
         // ----------------------------------------------------
-        // 2. SceneRenderer (唯一的核心绘制引擎：预览与导出共用!)
+        // 2. SceneRenderer (核心渲染引擎：预览与导出 100% 共享)
         // ----------------------------------------------------
         const SceneRenderer = {
-            // 核心纯函数：向任意 Canvas 绘制完整的 Riyad 美学画面
             drawScene(ctx, stateData, width, height, options = { isExport: false, showGrid: false }) {
-                // 重置 Context Transform
                 if (ctx.resetTransform) ctx.resetTransform();
                 else ctx.setTransform(1, 0, 0, 1, 0, 0);
                 ctx.clearRect(0, 0, width, height);
 
-                const midY = height / 2;
-
-                // 统一的图片画图平移算法
-                const drawLayerImage = (img, x, y, w, h, offset, scale) => {
-                    if (!img) return;
-                    const imgRatio = img.width / img.height;
-                    const destRatio = w / h;
-                    let drawW, drawH, drawX, drawY;
-
-                    if (imgRatio > destRatio) {
-                        drawH = h * scale;
-                        drawW = h * imgRatio * scale;
-                    } else {
-                        drawW = w * scale;
-                        drawH = w / imgRatio * scale;
-                    }
-
-                    drawX = x + (w - drawW) * (offset.x / 100);
-                    drawY = y + (h - drawH) * (offset.y / 100);
-
-                    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-                };
-
-                const layers = stateData.layers;
-
-                // 1. 绘制上半部大背景 (Top Background)
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(0, 0, width, midY);
-                ctx.clip();
-                drawLayerImage(stateData[layers.topBg.imgKey], 0, 0, width, midY, layers.topBg.offset, layers.topBg.scale);
-                ctx.restore();
-
-                // 2. 绘制下半部大背景 (Bottom Background)
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(0, midY, width, midY);
-                ctx.clip();
-                drawLayerImage(stateData[layers.bottomBg.imgKey], 0, midY, width, midY, layers.bottomBg.offset, layers.bottomBg.scale);
-                ctx.restore();
-
-                // 3. 计算中心嵌套卡片几何属性
-                const boxSize = width * (stateData.centerSize / 100);
-                const radiusPx = stateData.radius * (width / 320); 
-                const borderPx = stateData.borderWidth * (width / 320); 
-
-                // 4. 绘制上中心嵌套框 (Top Foreground)
-                const topBoxX = width / 2 - boxSize / 2;
-                const topBoxY = midY / 2 - boxSize / 2;
-
-                // A. 绘制卡座白色底板与软阴影
-                ctx.save();
-                ctx.shadowColor = 'rgba(139, 115, 85, 0.22)';
-                ctx.shadowBlur = 30 * (width / 1200);
-                ctx.shadowOffsetY = 8 * (width / 1200);
-                ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
-                ctx.fill();
-                ctx.restore();
-
-                // B. 绘制框内图 (Clip 至上嵌套卡片)
-                ctx.save();
-                ctx.beginPath();
-                this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
-                ctx.clip();
-                drawLayerImage(stateData[layers.topFg.imgKey], topBoxX, topBoxY, boxSize, boxSize, layers.topFg.offset, layers.topFg.scale);
-                ctx.restore();
-
-                // C. 绘制嵌套边框 (Unclipped)
-                if (borderPx > 0) {
-                    ctx.save();
-                    ctx.strokeStyle = stateData.borderColor;
-                    ctx.lineWidth = borderPx;
-                    ctx.beginPath();
-                    this.drawRoundedPath(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
-                    ctx.stroke();
-                    ctx.restore();
+                if (stateData.mode === 'inverse') {
+                    this.drawInverseScene(ctx, stateData, width, height, options);
+                } else if (stateData.mode === 'story') {
+                    this.drawStoryScene(ctx, stateData, width, height, options);
                 }
 
-                // 5. 绘制下中心嵌套框 (Bottom Foreground)
-                const bottomBoxX = width / 2 - boxSize / 2;
-                const bottomBoxY = midY + (midY / 2) - boxSize / 2;
-
-                // A. 绘制卡座底板阴影
-                ctx.save();
-                ctx.shadowColor = 'rgba(139, 115, 85, 0.22)';
-                ctx.shadowBlur = 30 * (width / 1200);
-                ctx.shadowOffsetY = 8 * (width / 1200);
-                ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
-                ctx.fill();
-                ctx.restore();
-
-                // B. 绘制框内图 (Clip 至下嵌套卡片)
-                ctx.save();
-                ctx.beginPath();
-                this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
-                ctx.clip();
-                drawLayerImage(stateData[layers.bottomFg.imgKey], bottomBoxX, bottomBoxY, boxSize, boxSize, layers.bottomFg.offset, layers.bottomFg.scale);
-                ctx.restore();
-
-                // C. 绘制嵌套边框
-                if (borderPx > 0) {
-                    ctx.save();
-                    ctx.strokeStyle = stateData.borderColor;
-                    ctx.lineWidth = borderPx;
-                    ctx.beginPath();
-                    this.drawRoundedPath(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-
-                // 6. 叠加胶片颗粒 (Film Grain)
+                // 叠加胶片颗粒 (Film Grain)
                 if (stateData.grainOpacity > 0) {
                     ctx.save();
                     ctx.fillStyle = `rgba(255, 255, 255, ${stateData.grainOpacity / 1.5})`;
@@ -428,67 +421,236 @@
                     }
                     ctx.restore();
                 }
+            },
 
-                // 7. 预览专属：九宫格辅助线与当前操控层指示框
+            // 图像通用渲染辅助
+            drawLayerImage(ctx, img, x, y, w, h, offset, scale) {
+                if (!img) return;
+                const imgRatio = img.width / img.height;
+                const destRatio = w / h;
+                let drawW, drawH, drawX, drawY;
+
+                if (imgRatio > destRatio) {
+                    drawH = h * scale;
+                    drawW = h * imgRatio * scale;
+                } else {
+                    drawW = w * scale;
+                    drawH = w / imgRatio * scale;
+                }
+
+                drawX = x + (w - drawW) * (offset.x / 100);
+                drawY = y + (h - drawH) * (offset.y / 100);
+
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            },
+
+            // 模式 1：镜像互换渲染
+            drawInverseScene(ctx, stateData, width, height, options) {
+                const midY = height / 2;
+                const inv = stateData.inverse;
+
+                // 1. 上大背景
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, 0, width, midY); ctx.clip();
+                this.drawLayerImage(ctx, inv[inv.layers.topBg.imgKey], 0, 0, width, midY, inv.layers.topBg.offset, inv.layers.topBg.scale);
+                ctx.restore();
+
+                // 2. 下大背景
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, midY, width, midY); ctx.clip();
+                this.drawLayerImage(ctx, inv[inv.layers.bottomBg.imgKey], 0, midY, width, midY, inv.layers.bottomBg.offset, inv.layers.bottomBg.scale);
+                ctx.restore();
+
+                // 3. 计算中心嵌套几何属性
+                const boxSize = width * (stateData.centerSize / 100);
+                const radiusPx = stateData.radius * (width / 320); 
+                const borderPx = stateData.borderWidth * (width / 320); 
+
+                // 上中心嵌套
+                const topBoxX = width / 2 - boxSize / 2;
+                const topBoxY = midY / 2 - boxSize / 2;
+                this.drawNestedBox(ctx, inv[inv.layers.topFg.imgKey], topBoxX, topBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.topFg.offset, inv.layers.topFg.scale, width);
+
+                // 下中心嵌套
+                const bottomBoxX = width / 2 - boxSize / 2;
+                const bottomBoxY = midY + (midY / 2) - boxSize / 2;
+                this.drawNestedBox(ctx, inv[inv.layers.bottomFg.imgKey], bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.bottomFg.offset, inv.layers.bottomFg.scale, width);
+
                 if (!options.isExport) {
-                    this.drawActiveHighlights(ctx, stateData, width, height, options.showGrid);
+                    this.drawInverseHighlights(ctx, stateData, width, height, options.showGrid);
                 }
             },
 
-            // 绘制预览时的交互辅助虚线
-            drawActiveHighlights(ctx, stateData, width, height, showGrid) {
+            // 模式 2：Ins Story 多图网格嵌套海报渲染
+            drawStoryScene(ctx, stateData, width, height, options) {
+                const st = stateData.story;
+
+                // 1. 全屏背景图
+                if (st.bgImage) {
+                    ctx.save();
+                    this.drawLayerImage(ctx, st.bgImage, 0, 0, width, height, st.bgOffset, st.bgScale);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#2D3748';
+                    ctx.fillRect(0, 0, width, height);
+                }
+
+                // 2. 居中多图嵌套网格 (Grid Area)
+                const gridAreaW = width * (stateData.centerSize / 100);
+                const radiusPx = stateData.radius * (width / 320);
+                const borderPx = stateData.borderWidth * (width / 320);
+                const gapPx = stateData.gridGap * (width / 320);
+
+                // 根据 layout 计算列数与行数
+                let cols = 2, rows = 2;
+                if (st.layout === '1') { cols = 1; rows = 1; }
+                else if (st.layout === '2-v') { cols = 1; rows = 2; }
+                else if (st.layout === '2-2') { cols = 2; rows = 2; }
+                else if (st.layout === '2-3') { cols = 2; rows = 3; }
+
+                const gridAreaH = gridAreaW * (rows / cols);
+                const gridStartX = width / 2 - gridAreaW / 2;
+                const gridStartY = height / 2 - gridAreaH / 2;
+
+                const cellW = (gridAreaW - (cols - 1) * gapPx) / cols;
+                const cellH = (gridAreaH - (rows - 1) * gapPx) / rows;
+
+                let cellIndex = 0;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const cellX = gridStartX + c * (cellW + gapPx);
+                        const cellY = gridStartY + r * (cellH + gapPx);
+                        const cellImg = st.gridImages[cellIndex];
+                        const cellLayer = st.gridLayers[cellIndex];
+
+                        this.drawNestedBox(ctx, cellImg, cellX, cellY, cellW, cellH, radiusPx, borderPx, stateData.borderColor, cellLayer.offset, cellLayer.scale, width);
+                        cellIndex++;
+                    }
+                }
+
+                // 3. 优雅的 Ins Story 底部文字标注
+                if (stateData.storyText) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.font = `600 ${11 * (width / 320)}px "Cinzel", "Inter", serif`;
+                    ctx.textAlign = 'center';
+                    ctx.letterSpacing = "3px";
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                    ctx.shadowBlur = 6 * (width / 320);
+                    ctx.fillText(stateData.storyText, width / 2, gridStartY + gridAreaH + 28 * (width / 320));
+                    ctx.restore();
+                }
+
+                if (!options.isExport) {
+                    this.drawStoryHighlights(ctx, stateData, width, height, gridStartX, gridStartY, gridAreaW, gridAreaH, cols, rows, cellW, cellH, gapPx, radiusPx, options.showGrid);
+                }
+            },
+
+            // 通用嵌套卡片绘制逻辑
+            drawNestedBox(ctx, img, x, y, w, h, radiusPx, borderPx, borderColor, offset, scale, canvasWidth) {
+                // A. 阴影底座
+                ctx.save();
+                ctx.shadowColor = 'rgba(139, 115, 85, 0.22)';
+                ctx.shadowBlur = 30 * (canvasWidth / 1200);
+                ctx.shadowOffsetY = 8 * (canvasWidth / 1200);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
+                ctx.fill();
+                ctx.restore();
+
+                // B. 内部裁切图片
+                if (img) {
+                    ctx.save();
+                    ctx.beginPath();
+                    this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
+                    ctx.clip();
+                    this.drawLayerImage(ctx, img, x, y, w, h, offset, scale);
+                    ctx.restore();
+                }
+
+                // C. 上层边框
+                if (borderPx > 0) {
+                    ctx.save();
+                    ctx.strokeStyle = borderColor;
+                    ctx.lineWidth = borderPx;
+                    ctx.beginPath();
+                    this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            },
+
+            // 模式 1 的高亮与九宫格绘制
+            drawInverseHighlights(ctx, stateData, width, height, showGrid) {
                 const active = stateData.activeLayer;
                 const midY = height / 2;
                 const boxSize = width * (stateData.centerSize / 100);
                 const radiusPx = stateData.radius * (width / 320);
 
                 let rect = { x: 0, y: 0, w: width, h: midY };
-                if (active === 'topBg') {
-                    rect = { x: 0, y: 0, w: width, h: midY };
-                } else if (active === 'bottomBg') {
-                    rect = { x: 0, y: midY, w: width, h: midY };
-                } else if (active === 'topFg') {
-                    rect = { x: width / 2 - boxSize / 2, y: midY / 2 - boxSize / 2, w: boxSize, h: boxSize };
-                } else if (active === 'bottomFg') {
-                    rect = { x: width / 2 - boxSize / 2, y: midY + (midY / 2) - boxSize / 2, w: boxSize, h: boxSize };
-                }
+                if (active === 'topBg') rect = { x: 0, y: 0, w: width, h: midY };
+                else if (active === 'bottomBg') rect = { x: 0, y: midY, w: width, h: midY };
+                else if (active === 'topFg') rect = { x: width / 2 - boxSize / 2, y: midY / 2 - boxSize / 2, w: boxSize, h: boxSize };
+                else if (active === 'bottomFg') rect = { x: width / 2 - boxSize / 2, y: midY + (midY / 2) - boxSize / 2, w: boxSize, h: boxSize };
 
-                // A. 绘制激活边界光圈
                 ctx.save();
                 ctx.strokeStyle = '#8B7355';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                if (active === 'topFg' || active === 'bottomFg') {
-                    this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
-                } else {
-                    ctx.rect(rect.x, rect.y, rect.w, rect.h);
-                }
+                if (active === 'topFg' || active === 'bottomFg') this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
+                else ctx.rect(rect.x, rect.y, rect.w, rect.h);
                 ctx.stroke();
                 ctx.restore();
 
-                // B. 拖拽期间绘制九宫格 (Rule of Thirds)
-                if (showGrid) {
-                    ctx.save();
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([4, 4]);
+                if (showGrid) this.drawThirdsGrid(ctx, rect, active === 'topFg' || active === 'bottomFg', radiusPx);
+            },
+
+            // 模式 2 的高亮与九宫格绘制
+            drawStoryHighlights(ctx, stateData, width, height, gridStartX, gridStartY, gridAreaW, gridAreaH, cols, rows, cellW, cellH, gapPx, radiusPx, showGrid) {
+                const active = stateData.activeLayer;
+                ctx.save();
+                ctx.strokeStyle = '#8B7355';
+                ctx.lineWidth = 2;
+
+                if (active === 'storyBg') {
+                    ctx.strokeRect(0, 0, width, height);
+                    if (showGrid) this.drawThirdsGrid(ctx, { x: 0, y: 0, w: width, h: height }, false, 0);
+                } else if (active.startsWith('storyCell_')) {
+                    const idx = parseInt(active.replace('storyCell_', ''));
+                    const r = Math.floor(idx / cols);
+                    const c = idx % cols;
+                    const cellX = gridStartX + c * (cellW + gapPx);
+                    const cellY = gridStartY + r * (cellH + gapPx);
 
                     ctx.beginPath();
-                    if (active === 'topFg' || active === 'bottomFg') {
-                        this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
-                        ctx.clip();
-                    }
-
-                    // 垂直三分线
-                    ctx.moveTo(rect.x + rect.w / 3, rect.y); ctx.lineTo(rect.x + rect.w / 3, rect.y + rect.h);
-                    ctx.moveTo(rect.x + (rect.w * 2) / 3, rect.y); ctx.lineTo(rect.x + (rect.w * 2) / 3, rect.y + rect.h);
-                    // 水平三分线
-                    ctx.moveTo(rect.x, rect.y + rect.h / 3); ctx.lineTo(rect.x + rect.w, rect.y + rect.h / 3);
-                    ctx.moveTo(rect.x, rect.y + (rect.h * 2) / 3); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h * 2) / 3);
-
+                    this.drawRoundedPath(ctx, cellX, cellY, cellW, cellH, radiusPx);
                     ctx.stroke();
-                    ctx.restore();
+
+                    if (showGrid) this.drawThirdsGrid(ctx, { x: cellX, y: cellY, w: cellW, h: cellH }, true, radiusPx);
                 }
+                ctx.restore();
+            },
+
+            drawThirdsGrid(ctx, rect, isRounded, radiusPx) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+
+                ctx.beginPath();
+                if (isRounded) {
+                    this.drawRoundedPath(ctx, rect.x, rect.y, rect.w, rect.h, radiusPx);
+                    ctx.clip();
+                }
+
+                ctx.moveTo(rect.x + rect.w / 3, rect.y); ctx.lineTo(rect.x + rect.w / 3, rect.y + rect.h);
+                ctx.moveTo(rect.x + (rect.w * 2) / 3, rect.y); ctx.lineTo(rect.x + (rect.w * 2) / 3, rect.y + rect.h);
+                ctx.moveTo(rect.x, rect.y + rect.h / 3); ctx.lineTo(rect.x + rect.w, rect.y + rect.h / 3);
+                ctx.moveTo(rect.x, rect.y + (rect.h * 2) / 3); ctx.lineTo(rect.x + rect.w, rect.y + (rect.h * 2) / 3);
+
+                ctx.stroke();
+                ctx.restore();
             },
 
             drawRoundedPath(ctx, x, y, width, height, radius) {
@@ -510,23 +672,18 @@
         };
 
         // ----------------------------------------------------
-        // 3. Renderer (负责驱动 Preview Canvas 刷新)
+        // 3. Renderer (视图渲染与 DOM 驱动)
         // ----------------------------------------------------
         const Renderer = {
             previewCanvas: null,
             ctx: null,
-            isShowingGrid: false,
 
             init() {
                 this.previewCanvas = document.getElementById('preview-canvas');
                 this.ctx = this.previewCanvas.getContext('2d');
             },
 
-            // 统一的 DOM 同步与动画帧渲染
             renderPreview(showGrid = false) {
-                this.isShowingGrid = showGrid;
-                
-                // 解决 Retina 高清屏渲染发模糊
                 const ws = document.getElementById('workspace');
                 const dpr = window.devicePixelRatio || 1;
                 const rect = ws.getBoundingClientRect();
@@ -534,18 +691,23 @@
                 this.previewCanvas.width = rect.width * dpr;
                 this.previewCanvas.height = rect.height * dpr;
 
-                // 绘制 Preview 图像
                 SceneRenderer.drawScene(
                     this.ctx, 
                     state, 
                     this.previewCanvas.width, 
                     this.previewCanvas.height, 
-                    { isExport: false, showGrid: this.isShowingGrid }
+                    { isExport: false, showGrid }
                 );
 
-                // 隐藏/显示空占位卡片
                 const placeholder = document.getElementById('workspace-placeholder');
-                if (state.imageA && state.imageB) {
+                let hasImages = false;
+                if (state.mode === 'inverse') {
+                    hasImages = !!(state.inverse.imageA && state.inverse.imageB);
+                } else {
+                    hasImages = !!(state.story.bgImage || state.story.gridImages.some(img => img !== null));
+                }
+
+                if (hasImages) {
                     placeholder.classList.add('opacity-0', 'pointer-events-none');
                 } else {
                     placeholder.classList.remove('opacity-0', 'pointer-events-none');
@@ -554,7 +716,7 @@
         };
 
         // ----------------------------------------------------
-        // 4. GestureManager (手势与触控响应系统)
+        // 4. GestureManager (跨模式手势定位与碰撞识别)
         // ----------------------------------------------------
         const GestureManager = {
             startX: 0,
@@ -571,28 +733,39 @@
             setActiveLayer(layer) {
                 state.activeLayer = layer;
                 
-                // 同步控制选项卡高亮
-                ['topBg', 'topFg', 'bottomBg', 'bottomFg'].forEach(l => {
-                    const tab = document.getElementById(`tab-${l}`);
-                    if (l === layer) {
-                        tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all";
-                    } else {
-                        tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all";
+                // 更新指示文本
+                let title = "当前图层";
+                let currentScale = 1.0;
+
+                if (state.mode === 'inverse') {
+                    const transMap = {
+                        'topBg': '上背景 (图A)', 'topFg': '上嵌套 (图B)',
+                        'bottomBg': '下背景 (图B)', 'bottomFg': '下嵌套 (图A)'
+                    };
+                    title = transMap[layer] || '未选中';
+                    currentScale = state.inverse.layers[layer]?.scale || 1.0;
+
+                    document.querySelectorAll('.btn-layer-tab').forEach(tab => {
+                        if (tab.dataset.layer === layer) {
+                            tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-[#8B7355] text-white font-semibold transition-all";
+                        } else {
+                            tab.className = "btn-layer-tab py-1 text-[10px] rounded-lg bg-white border border-[#EFEAE2] text-[#4A3E3D] font-semibold transition-all";
+                        }
+                    });
+                } else if (state.mode === 'story') {
+                    if (layer === 'storyBg') {
+                        title = "全屏背景图";
+                        currentScale = state.story.bgScale;
+                    } else if (layer.startsWith('storyCell_')) {
+                        const idx = parseInt(layer.replace('storyCell_', ''));
+                        title = `宫格图片 #${idx + 1}`;
+                        currentScale = state.story.gridLayers[idx]?.scale || 1.0;
                     }
-                });
+                }
 
-                const transMap = {
-                    'topBg': '上背景 (图A)',
-                    'topFg': '上嵌套 (图B)',
-                    'bottomBg': '下背景 (图B)',
-                    'bottomFg': '下嵌套 (图A)'
-                };
-                document.getElementById('active-layer-indicator').textContent = transMap[layer];
-
-                // 同步所选图层的 scale 滑块值
-                const activeScale = state.layers[layer].scale;
-                document.getElementById('input-active-scale').value = activeScale;
-                document.getElementById('active-scale-val').textContent = activeScale.toFixed(1) + 'x';
+                document.getElementById('active-layer-indicator').textContent = title;
+                document.getElementById('input-active-scale').value = currentScale;
+                document.getElementById('active-scale-val').textContent = currentScale.toFixed(1) + 'x';
 
                 Renderer.renderPreview(false);
             },
@@ -603,7 +776,7 @@
                 return Math.sqrt(dx * dx + dy * dy);
             },
 
-            // 智能碰撞判定：根据点击位置，自动激活对应位置的图层
+            // 智能碰撞检测
             detectLayerFromCoords(touchX, touchY) {
                 const canvas = Renderer.previewCanvas;
                 const rect = canvas.getBoundingClientRect();
@@ -611,25 +784,65 @@
                 const y = touchY - rect.top;
                 const w = rect.width;
                 const h = rect.height;
-                const midY = h / 2;
 
-                const boxSize = w * (state.centerSize / 100);
-                const topBoxX = w / 2 - boxSize / 2;
-                const topBoxY = midY / 2 - boxSize / 2;
-                const bottomBoxX = w / 2 - boxSize / 2;
-                const bottomBoxY = midY + (midY / 2) - boxSize / 2;
+                if (state.mode === 'inverse') {
+                    const midY = h / 2;
+                    const boxSize = w * (state.centerSize / 100);
+                    const topBoxX = w / 2 - boxSize / 2;
+                    const topBoxY = midY / 2 - boxSize / 2;
+                    const bottomBoxX = w / 2 - boxSize / 2;
+                    const bottomBoxY = midY + (midY / 2) - boxSize / 2;
 
-                // 判断是否在 topFg (上嵌套)
-                if (x >= topBoxX && x <= topBoxX + boxSize && y >= topBoxY && y <= topBoxY + boxSize) {
-                    return 'topFg';
+                    if (x >= topBoxX && x <= topBoxX + boxSize && y >= topBoxY && y <= topBoxY + boxSize) return 'topFg';
+                    if (x >= bottomBoxX && x <= bottomBoxX + boxSize && y >= bottomBoxY && y <= bottomBoxY + boxSize) return 'bottomFg';
+                    if (y < midY) return 'topBg';
+                    return 'bottomBg';
+                } else if (state.mode === 'story') {
+                    const st = state.story;
+                    const gridAreaW = w * (state.centerSize / 100);
+                    const gapPx = state.gridGap * (w / 320);
+
+                    let cols = 2, rows = 2;
+                    if (st.layout === '1') { cols = 1; rows = 1; }
+                    else if (st.layout === '2-v') { cols = 1; rows = 2; }
+                    else if (st.layout === '2-2') { cols = 2; rows = 2; }
+                    else if (st.layout === '2-3') { cols = 2; rows = 3; }
+
+                    const gridAreaH = gridAreaW * (rows / cols);
+                    const gridStartX = w / 2 - gridAreaW / 2;
+                    const gridStartY = h / 2 - gridAreaH / 2;
+                    const cellW = (gridAreaW - (cols - 1) * gapPx) / cols;
+                    const cellH = (gridAreaH - (rows - 1) * gapPx) / rows;
+
+                    let cellIndex = 0;
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            const cellX = gridStartX + c * (cellW + gapPx);
+                            const cellY = gridStartY + r * (cellH + gapPx);
+                            if (x >= cellX && x <= cellX + cellW && y >= cellY && y <= cellY + cellH) {
+                                return `storyCell_${cellIndex}`;
+                            }
+                            cellIndex++;
+                        }
+                    }
+                    return 'storyBg';
                 }
-                // 判断是否在 bottomFg (下嵌套)
-                if (x >= bottomBoxX && x <= bottomBoxX + boxSize && y >= bottomBoxY && y <= bottomBoxY + boxSize) {
-                    return 'bottomFg';
+            },
+
+            // 抓取当前选中图层的 Scale 与 Offset 属性引用
+            getActiveLayerTarget() {
+                const layer = state.activeLayer;
+                if (state.mode === 'inverse') {
+                    return state.inverse.layers[layer];
+                } else if (state.mode === 'story') {
+                    if (layer === 'storyBg') {
+                        return { offset: state.story.bgOffset, get scale() { return state.story.bgScale; }, set scale(v) { state.story.bgScale = v; } };
+                    } else if (layer.startsWith('storyCell_')) {
+                        const idx = parseInt(layer.replace('storyCell_', ''));
+                        return state.story.gridLayers[idx];
+                    }
                 }
-                // 判断是在上半区还是下半区
-                if (y < midY) return 'topBg';
-                return 'bottomBg';
+                return null;
             },
 
             bindGestures() {
@@ -641,39 +854,39 @@
                     const touches = e.touches;
                     const pt = touches ? touches[0] : e;
                     
-                    // 触控精准选层
                     const targetLayer = this.detectLayerFromCoords(pt.clientX, pt.clientY);
                     this.setActiveLayer(targetLayer);
 
                     this.isDragging = true;
+                    const layerTarget = this.getActiveLayerTarget();
+                    if (!layerTarget) return;
 
                     if (touches && touches.length === 2) {
                         this.startDistance = this.getTouchDistance(touches);
-                        this.initialScale = state.layers[targetLayer].scale;
+                        this.initialScale = layerTarget.scale;
                         return;
                     }
 
                     this.startX = pt.clientX;
                     this.startY = pt.clientY;
-                    this.initialOffset = { ...state.layers[targetLayer].offset };
+                    this.initialOffset = { ...layerTarget.offset };
 
-                    Renderer.renderPreview(true); // 打开九宫格
+                    Renderer.renderPreview(true);
                 };
 
                 const onMove = (e) => {
                     if (!this.isDragging) return;
                     if (e.cancelable) e.preventDefault();
 
-                    const targetLayer = state.activeLayer;
-                    const layerObj = state.layers[targetLayer];
+                    const layerTarget = this.getActiveLayerTarget();
+                    if (!layerTarget) return;
                     const touches = e.touches;
 
-                    // 处理双指捏合缩放
                     if (touches && touches.length === 2) {
                         const dist = this.getTouchDistance(touches);
                         if (this.startDistance > 0) {
                             const scale = Math.max(1.0, Math.min(4.0, this.initialScale * (dist / this.startDistance)));
-                            layerObj.scale = scale;
+                            layerTarget.scale = scale;
                             
                             document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
                             document.getElementById('input-active-scale').value = scale;
@@ -682,7 +895,6 @@
                         return;
                     }
 
-                    // 处理单指/鼠标平移
                     const pt = touches ? touches[0] : e;
                     const dx = pt.clientX - this.startX;
                     const dy = pt.clientY - this.startY;
@@ -690,13 +902,13 @@
                     const wsW = parseFloat(document.getElementById('workspace').style.width || 320);
                     const scaleFactorW = wsW * 0.8;
                     const scaleFactorH = wsW * 0.4;
-                    const scaleVal = layerObj.scale;
+                    const scaleVal = layerTarget.scale;
 
                     const chgX = (dx / scaleFactorW) * 100 / scaleVal;
                     const chgY = (dy / scaleFactorH) * 100 / scaleVal;
 
-                    layerObj.offset.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
-                    layerObj.offset.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
+                    layerTarget.offset.x = Math.max(0, Math.min(100, this.initialOffset.x - chgX));
+                    layerTarget.offset.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
 
                     Renderer.renderPreview(true);
                 };
@@ -704,7 +916,7 @@
                 const onEnd = () => {
                     if (this.isDragging) {
                         this.isDragging = false;
-                        Renderer.renderPreview(false); // 隐起九宫格
+                        Renderer.renderPreview(false);
                         Storage.autoSave();
                     }
                 };
@@ -715,11 +927,12 @@
                     this.setActiveLayer(targetLayer);
 
                     const factor = -e.deltaY * 0.0015;
-                    const layerObj = state.layers[targetLayer];
-                    layerObj.scale = Math.max(1.0, Math.min(4.0, layerObj.scale + factor));
-
-                    this.setActiveLayer(targetLayer);
-                    Storage.autoSave();
+                    const layerTarget = this.getActiveLayerTarget();
+                    if (layerTarget) {
+                        layerTarget.scale = Math.max(1.0, Math.min(4.0, layerTarget.scale + factor));
+                        this.setActiveLayer(targetLayer);
+                        Storage.autoSave();
+                    }
                 };
 
                 canvas.addEventListener('mousedown', onStart);
@@ -734,48 +947,50 @@
         };
 
         // ----------------------------------------------------
-        // 5. ExportEngine (纯粹的数据渲染导出引擎 - 绝对不读取 DOM)
+        // 5. ExportEngine (纯粹的数据渲染导出引擎)
         // ----------------------------------------------------
         const ExportEngine = {
             async generate() {
-                if (!state.imageA || !state.imageB) {
+                // 校验
+                let hasImages = false;
+                if (state.mode === 'inverse') {
+                    hasImages = !!(state.inverse.imageA && state.inverse.imageB);
+                } else {
+                    hasImages = !!(state.story.bgImage || state.story.gridImages.some(img => img !== null));
+                }
+
+                if (!hasImages) {
                     const alertBox = document.createElement('div');
                     alertBox.className = "fixed top-12 left-1/2 -translate-x-1/2 bg-[#8B7355] text-white font-bold px-6 py-3 rounded-full shadow-xl z-50 transition-all text-xs tracking-wider";
-                    alertBox.textContent = "请先导入图A和图B才可以生成哦！";
+                    alertBox.textContent = "请先导入素材图片才可以导出哦！";
                     document.body.appendChild(alertBox);
                     setTimeout(() => alertBox.remove(), 2500);
                     return;
                 }
 
-                // 【重构重点 ★★★★★】在保存前显式等待一帧 rAF，保证 state 状态彻底刷新与锁死
                 await new Promise(requestAnimationFrame);
 
                 const btnDownload = document.getElementById('btn-download');
                 const origHTML = btnDownload.innerHTML;
-                btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">高清100%同步重构中...</span>`;
+                btnDownload.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span class="text-xs">Ins 超清海报像素重构中...</span>`;
                 lucide.createIcons();
 
                 let outW = 1600;
                 let outH = 1600;
 
                 if (state.ratio === '3-4') {
-                    outW = 1600;
-                    outH = 2133;
+                    outW = 1600; outH = 2133;
                 } else if (state.ratio === '9-16') {
-                    outW = 1440;
-                    outH = 2560;
+                    outW = 1440; outH = 2560;
                 }
 
-                // 独立创建 Export Canvas 导出层，纯依靠 state 绘制!
                 const exportCanvas = document.getElementById('export-canvas');
                 exportCanvas.width = outW;
                 exportCanvas.height = outH;
                 const ctx = exportCanvas.getContext('2d');
 
-                // 调用核心公共引擎绘制Scene (isExport: true 自动不画辅助虚线)
                 SceneRenderer.drawScene(ctx, state, outW, outH, { isExport: true, showGrid: false });
 
-                // 唤醒保存弹层
                 setTimeout(() => {
                     try {
                         const dataURL = exportCanvas.toDataURL('image/png');
@@ -786,7 +1001,7 @@
                             document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                         } else {
                             const link = document.createElement('a');
-                            link.download = `riyad_inverse_v4_${Date.now()}.png`;
+                            link.download = `riyad_story_${state.mode}_${Date.now()}.png`;
                             link.href = dataURL;
                             document.body.appendChild(link);
                             link.click();
@@ -797,7 +1012,6 @@
                         document.getElementById('modal-download-img').src = dataURL;
                         document.getElementById('mobile-download-modal').classList.remove('opacity-0', 'pointer-events-none');
                     } finally {
-                        // 释放显存
                         exportCanvas.width = 0;
                         exportCanvas.height = 0;
                         btnDownload.innerHTML = origHTML;
@@ -808,9 +1022,46 @@
         };
 
         // ----------------------------------------------------
-        // 6. LayerManager (加载及素材控制)
+        // 6. LayerManager (模式与布局状态管理)
         // ----------------------------------------------------
         const LayerManager = {
+            setMode(mode) {
+                state.mode = mode;
+                
+                // 按钮切换高亮
+                document.querySelectorAll('.btn-mode').forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5";
+                    } else {
+                        btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] hover:bg-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
+                    }
+                });
+
+                // 控制面板显示/隐藏
+                const inversePanel = document.getElementById('panel-inverse-controls');
+                const storyPanel = document.getElementById('panel-story-controls');
+                const rowGridGap = document.getElementById('row-grid-gap');
+
+                if (mode === 'inverse') {
+                    inversePanel.classList.remove('hidden');
+                    storyPanel.classList.add('hidden');
+                    rowGridGap.classList.add('hidden');
+                    GestureManager.setActiveLayer('topBg');
+                } else if (mode === 'story') {
+                    inversePanel.classList.add('hidden');
+                    storyPanel.classList.remove('hidden');
+                    rowGridGap.classList.remove('hidden');
+                    
+                    // 默认使用适合 Story 的 9:16 画幅
+                    this.setRatio('9-16');
+                    this.rebuildStoryGridUploadCells();
+                    GestureManager.setActiveLayer('storyBg');
+                }
+
+                Renderer.renderPreview(false);
+                Storage.autoSave();
+            },
+
             setRatio(ratio) {
                 state.ratio = ratio;
                 this.adaptWorkspaceScale();
@@ -827,6 +1078,71 @@
                 Storage.autoSave();
             },
 
+            setStoryLayout(layout) {
+                state.story.layout = layout;
+                
+                document.querySelectorAll('.btn-story-layout').forEach(btn => {
+                    if (btn.dataset.layout === layout) {
+                        btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] text-white font-bold shadow-sm";
+                    } else {
+                        btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] text-[#4A3E3D] font-medium";
+                    }
+                });
+
+                this.rebuildStoryGridUploadCells();
+                Renderer.renderPreview(false);
+                Storage.autoSave();
+            },
+
+            // 动态构建 1-6 宫格上传表单节点
+            rebuildStoryGridUploadCells() {
+                const container = document.getElementById('story-grid-upload-cells');
+                container.innerHTML = '';
+
+                let count = 4;
+                if (state.story.layout === '1') count = 1;
+                else if (state.story.layout === '2-v') count = 2;
+                else if (state.story.layout === '2-2') count = 4;
+                else if (state.story.layout === '2-3') count = 6;
+
+                for (let i = 0; i < count; i++) {
+                    const hasImg = !!state.story.gridImages[i];
+                    const cell = document.createElement('div');
+                    cell.className = "relative";
+                    cell.innerHTML = `
+                        <input type="file" id="upload-story-grid-${i}" accept="image/*" class="hidden">
+                        <label for="upload-story-grid-${i}" class="flex flex-col items-center justify-center h-14 border border-dashed border-[#CBBFB0] hover:border-[#8B7355] rounded-xl cursor-pointer bg-[#FAF6F0] hover:bg-[#FAF6F0]/80 transition-all overflow-hidden relative">
+                            ${hasImg ? `<img src="${state.story.gridImages[i].src}" class="absolute inset-0 w-full h-full object-cover">` : `<i data-lucide="plus" class="w-3.5 h-3.5 text-[#8B7355]"></i><span class="text-[9px] text-[#4A3E3D] font-medium mt-0.5">图 #${i+1}</span>`}
+                        </label>
+                    `;
+                    container.appendChild(cell);
+
+                    document.getElementById(`upload-story-grid-${i}`).addEventListener('change', (e) => {
+                        this.handleStoryGridUpload(e, i);
+                    });
+                }
+                lucide.createIcons();
+            },
+
+            handleStoryGridUpload(event, index) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        state.story.gridImages[index] = img;
+                        this.rebuildStoryGridUploadCells();
+                        GestureManager.setActiveLayer(`storyCell_${index}`);
+                        Renderer.renderPreview(false);
+                        Storage.autoSave();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+
             adaptWorkspaceScale() {
                 const ws = document.getElementById('workspace');
                 const container = ws.parentElement;
@@ -837,11 +1153,9 @@
                 let targetH = 400;
 
                 if (state.ratio === '3-4') {
-                    targetW = 360;
-                    targetH = 480;
+                    targetW = 360; targetH = 480;
                 } else if (state.ratio === '9-16') {
-                    targetW = 320;
-                    targetH = 568;
+                    targetW = 320; targetH = 568;
                 }
 
                 let scale = 1;
@@ -854,78 +1168,129 @@
             },
 
             loadSampleAssets() {
-                const sampleA = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80";
-                const sampleB = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80";
+                if (state.mode === 'inverse') {
+                    const sampleA = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80";
+                    const sampleB = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80";
 
-                let loaded = 0;
-                const checkAndRun = () => {
-                    loaded++;
-                    if (loaded === 2) {
-                        Renderer.renderPreview(false);
-                        Storage.autoSave();
-                    }
-                };
+                    let loaded = 0;
+                    const check = () => {
+                        loaded++;
+                        if (loaded === 2) {
+                            Renderer.renderPreview(false);
+                            Storage.autoSave();
+                        }
+                    };
 
-                const imgA = new Image();
-                imgA.crossOrigin = "anonymous";
-                imgA.onload = () => {
-                    state.imageA = imgA;
-                    document.getElementById('img-thumb-a').src = sampleA;
-                    document.getElementById('preview-container-a').classList.remove('hidden');
-                    document.getElementById('placeholder-a').classList.add('hidden');
-                    checkAndRun();
-                };
-                imgA.src = sampleA;
+                    const imgA = new Image(); imgA.crossOrigin = "anonymous";
+                    imgA.onload = () => {
+                        state.inverse.imageA = imgA;
+                        document.getElementById('img-thumb-a').src = sampleA;
+                        document.getElementById('preview-container-a').classList.remove('hidden');
+                        document.getElementById('placeholder-a').classList.add('hidden');
+                        check();
+                    };
+                    imgA.src = sampleA;
 
-                const imgB = new Image();
-                imgB.crossOrigin = "anonymous";
-                imgB.onload = () => {
-                    state.imageB = imgB;
-                    document.getElementById('img-thumb-b').src = sampleB;
-                    document.getElementById('preview-container-b').classList.remove('hidden');
-                    document.getElementById('placeholder-b').classList.add('hidden');
-                    checkAndRun();
-                };
-                imgB.src = sampleB;
+                    const imgB = new Image(); imgB.crossOrigin = "anonymous";
+                    imgB.onload = () => {
+                        state.inverse.imageB = imgB;
+                        document.getElementById('img-thumb-b').src = sampleB;
+                        document.getElementById('preview-container-b').classList.remove('hidden');
+                        document.getElementById('placeholder-b').classList.add('hidden');
+                        check();
+                    };
+                    imgB.src = sampleB;
+                } else if (state.mode === 'story') {
+                    // Ins Story 样图素材
+                    const sampleBg = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80"; // 海浪浪花大图
+                    const samples = [
+                        "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=500&q=80", // 甜品蛋糕
+                        "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80", // 饮品
+                        "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=500&q=80", // 冰淇淋
+                        "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=500&q=80"  // 草莓水果
+                    ];
+
+                    let loaded = 0;
+                    const check = () => {
+                        loaded++;
+                        if (loaded === 5) {
+                            this.rebuildStoryGridUploadCells();
+                            Renderer.renderPreview(false);
+                            Storage.autoSave();
+                        }
+                    };
+
+                    const bgImg = new Image(); bgImg.crossOrigin = "anonymous";
+                    bgImg.onload = () => {
+                        state.story.bgImage = bgImg;
+                        document.getElementById('story-bg-status').textContent = "已就绪";
+                        check();
+                    };
+                    bgImg.src = sampleBg;
+
+                    samples.forEach((src, i) => {
+                        const img = new Image(); img.crossOrigin = "anonymous";
+                        img.onload = () => {
+                            state.story.gridImages[i] = img;
+                            check();
+                        };
+                        img.src = src;
+                    });
+                }
             }
         };
 
         // ----------------------------------------------------
-        // 7. Storage (逻辑配置自动持久化)
+        // 7. Storage (持久化存储)
         // ----------------------------------------------------
         const Storage = {
             autoSave() {
                 const config = {
+                    mode: state.mode,
                     ratio: state.ratio,
                     centerSize: state.centerSize,
+                    gridGap: state.gridGap,
                     radius: state.radius,
                     grainOpacity: state.grainOpacity,
                     borderWidth: state.borderWidth,
                     borderColor: state.borderColor,
-                    layers: state.layers
+                    storyText: state.storyText,
+                    inverseLayers: state.inverse.layers,
+                    storyBgOffset: state.story.bgOffset,
+                    storyBgScale: state.story.bgScale,
+                    storyLayout: state.story.layout,
+                    storyGridLayers: state.story.gridLayers
                 };
-                localStorage.setItem('riyad_inverse_v4_config', JSON.stringify(config));
+                localStorage.setItem('riyad_v5_config', JSON.stringify(config));
             },
 
             loadDraft() {
-                const raw = localStorage.getItem('riyad_inverse_v4_config');
+                const raw = localStorage.getItem('riyad_v5_config');
                 if (!raw) return;
                 try {
                     const parsed = JSON.parse(raw);
+                    state.mode = parsed.mode || 'inverse';
                     state.ratio = parsed.ratio || '1-1';
                     state.centerSize = parsed.centerSize || 35;
+                    state.gridGap = parsed.gridGap || 2;
                     state.radius = parsed.radius || 0;
                     state.grainOpacity = parsed.grainOpacity || 0.06;
-                    state.borderWidth = parsed.borderWidth || 1;
+                    state.borderWidth = parsed.borderWidth || 0;
                     state.borderColor = parsed.borderColor || '#FFFFFF';
+                    state.storyText = parsed.storyText || '04 APR 2026';
 
-                    if (parsed.layers) {
-                        state.layers = parsed.layers;
-                    }
+                    if (parsed.inverseLayers) state.inverse.layers = parsed.inverseLayers;
+                    if (parsed.storyBgOffset) state.story.bgOffset = parsed.storyBgOffset;
+                    if (parsed.storyBgScale) state.story.bgScale = parsed.storyBgScale;
+                    if (parsed.storyLayout) state.story.layout = parsed.storyLayout;
+                    if (parsed.storyGridLayers) state.story.gridLayers = parsed.storyGridLayers;
 
-                    // 恢复控件面板 DOM 值
+                    // 恢复 DOM 控件显示
                     document.getElementById('input-center-size').value = state.centerSize;
                     document.getElementById('center-size-val').textContent = state.centerSize + '%';
+
+                    document.getElementById('input-grid-gap').value = state.gridGap;
+                    document.getElementById('grid-gap-val').textContent = state.gridGap + 'px';
 
                     document.getElementById('input-radius').value = state.radius;
                     document.getElementById('radius-val').textContent = state.radius + 'px';
@@ -937,32 +1302,89 @@
                     document.getElementById('border-width-val').textContent = state.borderWidth + 'px';
 
                     document.getElementById('input-border-color').value = state.borderColor;
+                    document.getElementById('input-story-text').value = state.storyText;
 
-                    LayerManager.setRatio(state.ratio);
+                    LayerManager.setMode(state.mode);
                 } catch (e) {
-                    console.warn("读取本地草稿失败:", e);
+                    console.warn("读取配置草稿失败:", e);
                 }
             }
         };
 
         // ----------------------------------------------------
-        // 8. EventManager (【重构重点】集中绑定所有 DOM 事件)
+        // 8. EventManager (集中绑定所有 DOM 事件)
         // ----------------------------------------------------
         const EventManager = {
             bindEvents() {
-                // 1. 上传图片事件
+                // 模式选择
+                document.querySelectorAll('.btn-mode').forEach(btn => {
+                    btn.addEventListener('click', () => LayerManager.setMode(btn.dataset.mode));
+                });
+
+                // 镜像模式上传
                 document.getElementById('upload-a').addEventListener('change', (e) => this.handleUpload(e, 'A'));
                 document.getElementById('upload-b').addEventListener('change', (e) => this.handleUpload(e, 'B'));
 
-                // 2. 样图按钮
-                document.getElementById('btn-sample-assets').addEventListener('click', () => LayerManager.loadSampleAssets());
+                // Story 模式背景上传
+                document.getElementById('upload-story-bg').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            state.story.bgImage = img;
+                            document.getElementById('story-bg-status').textContent = "已就绪";
+                            GestureManager.setActiveLayer('storyBg');
+                            Renderer.renderPreview(false);
+                            Storage.autoSave();
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
 
-                // 3. 画幅比例按钮组
+                // Story 模式批量多图上传
+                document.getElementById('upload-story-grid-multi').addEventListener('change', (e) => {
+                    const files = Array.from(e.target.files);
+                    if (!files.length) return;
+
+                    let loaded = 0;
+                    files.forEach((file, index) => {
+                        if (index >= 6) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                state.story.gridImages[index] = img;
+                                loaded++;
+                                if (loaded === Math.min(files.length, 6)) {
+                                    LayerManager.rebuildStoryGridUploadCells();
+                                    Renderer.renderPreview(false);
+                                    Storage.autoSave();
+                                }
+                            };
+                            img.src = ev.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                // Story 布局按钮
+                document.querySelectorAll('.btn-story-layout').forEach(btn => {
+                    btn.addEventListener('click', () => LayerManager.setStoryLayout(btn.dataset.layout));
+                });
+
+                // 样图按钮
+                document.getElementById('btn-sample-assets').addEventListener('click', () => LayerManager.loadSampleAssets());
+                document.getElementById('btn-sample-assets-pc').addEventListener('click', () => LayerManager.loadSampleAssets());
+
+                // 画幅比例按钮组
                 document.querySelectorAll('.btn-ratio').forEach(btn => {
                     btn.addEventListener('click', () => LayerManager.setRatio(btn.dataset.ratio));
                 });
 
-                // 4. 嵌套尺寸 Slider
+                // 嵌套尺寸
                 document.getElementById('input-center-size').addEventListener('input', (e) => {
                     state.centerSize = parseInt(e.target.value);
                     document.getElementById('center-size-val').textContent = state.centerSize + '%';
@@ -970,7 +1392,15 @@
                     Storage.autoSave();
                 });
 
-                // 5. 边框宽度 Slider
+                // 缝隙 Gap
+                document.getElementById('input-grid-gap').addEventListener('input', (e) => {
+                    state.gridGap = parseInt(e.target.value);
+                    document.getElementById('grid-gap-val').textContent = state.gridGap + 'px';
+                    Renderer.renderPreview(false);
+                    Storage.autoSave();
+                });
+
+                // 边框宽度
                 document.getElementById('input-border-width').addEventListener('input', (e) => {
                     state.borderWidth = parseInt(e.target.value);
                     document.getElementById('border-width-val').textContent = state.borderWidth + 'px';
@@ -978,7 +1408,7 @@
                     Storage.autoSave();
                 });
 
-                // 6. 预设颜色 & Color Input
+                // 预设颜色 & Color Input
                 document.querySelectorAll('.btn-preset-color').forEach(btn => {
                     btn.addEventListener('click', () => {
                         state.borderColor = btn.dataset.color;
@@ -993,21 +1423,26 @@
                     Storage.autoSave();
                 });
 
-                // 7. 图层 Tab 切换
-                document.querySelectorAll('.btn-layer-tab').forEach(tab => {
-                    tab.addEventListener('click', () => GestureManager.setActiveLayer(tab.dataset.layer));
-                });
-
-                // 8. 激活图层的 Scale 缩放条
-                document.getElementById('input-active-scale').addEventListener('input', (e) => {
-                    const scale = parseFloat(e.target.value);
-                    state.layers[state.activeLayer].scale = scale;
-                    document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
+                // 水印文本
+                document.getElementById('input-story-text').addEventListener('input', (e) => {
+                    state.storyText = e.target.value;
                     Renderer.renderPreview(false);
                     Storage.autoSave();
                 });
 
-                // 9. 圆角 & 噪点
+                // 激活图层的 Scale 缩放条
+                document.getElementById('input-active-scale').addEventListener('input', (e) => {
+                    const scale = parseFloat(e.target.value);
+                    const layerTarget = GestureManager.getActiveLayerTarget();
+                    if (layerTarget) {
+                        layerTarget.scale = scale;
+                        document.getElementById('active-scale-val').textContent = scale.toFixed(1) + 'x';
+                        Renderer.renderPreview(false);
+                        Storage.autoSave();
+                    }
+                });
+
+                // 圆角 & 噪点
                 document.getElementById('input-radius').addEventListener('input', (e) => {
                     state.radius = parseInt(e.target.value);
                     document.getElementById('radius-val').textContent = state.radius + 'px';
@@ -1022,13 +1457,13 @@
                     Storage.autoSave();
                 });
 
-                // 10. 下载按钮与关弹窗
+                // 下载按钮与关弹窗
                 document.getElementById('btn-download').addEventListener('click', () => ExportEngine.generate());
                 document.getElementById('btn-close-modal').addEventListener('click', () => {
                     document.getElementById('mobile-download-modal').classList.add('opacity-0', 'pointer-events-none');
                 });
 
-                // 11. 窗口 Resize 自适应
+                // 窗口 Resize
                 window.addEventListener('resize', () => {
                     LayerManager.adaptWorkspaceScale();
                     Renderer.renderPreview(false);
@@ -1045,12 +1480,12 @@
                     const img = new Image();
                     img.onload = () => {
                         if (type === 'A') {
-                            state.imageA = img;
+                            state.inverse.imageA = img;
                             document.getElementById('img-thumb-a').src = base64;
                             document.getElementById('preview-container-a').classList.remove('hidden');
                             document.getElementById('placeholder-a').classList.add('hidden');
                         } else {
-                            state.imageB = img;
+                            state.inverse.imageB = img;
                             document.getElementById('img-thumb-b').src = base64;
                             document.getElementById('preview-container-b').classList.remove('hidden');
                             document.getElementById('placeholder-b').classList.add('hidden');
@@ -1066,15 +1501,13 @@
         };
 
         // ----------------------------------------------------
-        // 系统生命周期启动
+        // 系统生命周期挂载
         // ----------------------------------------------------
         window.addEventListener('DOMContentLoaded', () => {
             Renderer.init();
             GestureManager.init();
             EventManager.bindEvents();
             Storage.loadDraft();
-
-            GestureManager.setActiveLayer('topBg');
 
             setTimeout(() => {
                 LayerManager.adaptWorkspaceScale();
