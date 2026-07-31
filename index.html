@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V6.9 专业排版生成器</title>
+    <title>Riyad Studio V7.0 专业排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -45,12 +45,12 @@
     </div>
 
     <!-- 1. 移动端顶部导航栏 -->
-    <header class="lg:hidden shrink-0 bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md border-b border-[#EFEAE2] dark:border-[#3E3834] px-4 py-3 flex items-center justify-between z-40">
+    <header class="lg:hidden shrink-0 bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md border-b border-[#EFEAE2] dark:border-[#3E3834] px-4 py-2.5 flex items-center justify-between z-40">
         <div class="flex items-center gap-2">
             <span class="p-1.5 bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] rounded-lg text-white">
                 <i data-lucide="camera" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v6.9</span>
+            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v7.0</span>
         </div>
         <div class="flex items-center gap-2">
             <button id="btn-theme-toggle-m" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#70FFFF] cream-button">
@@ -64,11 +64,11 @@
         </div>
     </header>
 
-    <!-- 2. 主预览画幅舞台 (修复高度压缩与 flex-1 冲突) -->
-    <div class="h-[460px] lg:h-screen lg:w-1/2 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden shrink-0 touch-none bg-[#FAF6F0]/50 dark:bg-[#1E1B18]/50">
+    <!-- 2. 主预览画幅舞台 (移动端动态自适应高度，不缩在左上角，永不消失) -->
+    <div class="h-[34vh] lg:h-screen lg:w-1/2 flex items-center justify-center p-3 sm:p-6 relative overflow-hidden shrink-0 touch-none bg-[#FAF6F0]/50 dark:bg-[#1E1B18]/50">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
-            <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#1E3838] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
-            <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] dark:bg-[#152E2E] blur-[100px] bottom-1/4 right-1/4"></div>
+            <div class="absolute w-[200px] h-[200px] rounded-full bg-[#E8DCC4] dark:bg-[#1E3838] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
+            <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E6D0BE] dark:bg-[#152E2E] blur-[100px] bottom-1/4 right-1/4"></div>
         </div>
 
         <div id="workspace" class="relative bg-white dark:bg-[#282421] shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 flex items-center justify-center border border-[#EFEAE2] dark:border-[#3E3834]" style="width: 320px; height: 568px; border-radius: 12px;">
@@ -81,15 +81,15 @@
         </div>
     </div>
 
-    <!-- 3. 控制面板 (独立局部滚动) -->
-    <div class="w-full lg:w-1/2 bg-white dark:bg-[#282421] border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto z-30 h-[calc(100vh-460px)] lg:h-screen pb-24">
+    <!-- 3. 控制面板 (下侧编辑区高度释放，滚动空间极大) -->
+    <div class="w-full lg:w-1/2 bg-white dark:bg-[#282421] border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] p-5 flex flex-col gap-4 shrink-0 overflow-y-auto z-30 h-[calc(100vh-34vh-53px)] lg:h-screen pb-28">
         
         <div class="hidden lg:flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="p-1.5 bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] rounded-xl text-white">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                 </span>
-                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v6.9</span>
+                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v7.0</span>
             </div>
             <div class="flex items-center gap-2">
                 <button id="btn-theme-toggle" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#70FFFF] cream-button" title="切换深色/浅色模式">
@@ -201,7 +201,7 @@
             </div>
         </div>
 
-        <!-- 文本排版增强模块 (通用格式范式) -->
+        <!-- 文本排版增强模块 -->
         <div class="flex flex-col gap-2.5">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="type" class="w-3.5 h-3.5"></i> 独立文本排版设计
@@ -323,7 +323,7 @@
                 <span class="text-[11px] font-bold flex items-center gap-1">
                     <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-[#8B7355] dark:text-[#70FFFF]"></i> 当前操控图层
                 </span>
-                <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white font-bold">自由文字层</span>
+                <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] dark:text-[#1E1B18] dark:bg-[#70FFFF] text-white font-bold">自由文字层</span>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -363,7 +363,7 @@
                 <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
             </svg>
-            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#70FFFF]/60 tracking-wider">Aesthetic Poster Engine V6.9 (Masterpiece)</span>
+            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#70FFFF]/60 tracking-wider">Aesthetic Poster Engine V7.0 (Responsive)</span>
         </div>
 
     </div>
@@ -936,13 +936,24 @@
                 lucide.createIcons();
             },
 
+            // 【核心重构】：让画板在手机与电脑上实现完美的动态自适应缩放，绝不缩在左上角，并为下方控制区留出极大滚动空间
             adaptWorkspaceScale() {
-                const ws = document.getElementById('workspace'); const container = ws.parentElement;
+                const ws = document.getElementById('workspace'); 
+                const container = ws.parentElement;
+                
                 let tw = 320, th = 568; 
                 if (state.ratio === '1-1') { tw = 400; th = 400; } 
                 else if (state.ratio === '3-4') { tw = 360; th = 480; }
-                const scale = Math.min((container.clientWidth - 24) / tw, (container.clientHeight - 24) / th, 1);
-                ws.style.width = `${tw * scale}px`; ws.style.height = `${th * scale}px`;
+                
+                const containerW = container.clientWidth - 24;
+                const containerH = container.clientHeight - 24;
+                
+                const scaleX = containerW / tw;
+                const scaleY = containerH / th;
+                const scale = Math.min(scaleX, scaleY, 1.2); // 允许在宽屏下适当自适应放大
+
+                ws.style.width = `${tw * scale}px`; 
+                ws.style.height = `${th * scale}px`;
             },
 
             loadSampleAssets() {
@@ -1054,11 +1065,9 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            //【修复核心】：DOMContentLoaded 处及早挂载 Lucide 图标防止空白
             lucide.createIcons();
             Renderer.init(); GestureManager.init(); EventManager.bindEvents();
             
-            // 绑定系统真实日期
             const systemToday = getSystemTodayStr();
             document.getElementById('input-date-val').value = systemToday;
             state.dateLayer.raw = systemToday;
@@ -1068,7 +1077,7 @@
                 lucide.createIcons();
                 LayerManager.adaptWorkspaceScale(); 
                 Renderer.renderPreview(); 
-            }, 100);
+            }, 150);
         });
     </script>
 </body>
