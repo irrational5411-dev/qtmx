@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V6.3 终极排版生成器</title>
+    <title>Riyad Studio V6.4 美学排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -55,7 +55,7 @@
             <span class="p-1.5 bg-[#8B7355] dark:bg-[#52B788] rounded-lg text-white">
                 <i data-lucide="camera" class="w-4 h-4"></i>
             </span>
-            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v6.3</span>
+            <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v6.4</span>
         </div>
         <div class="flex items-center gap-2">
             <button id="btn-theme-toggle-m" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#52B788] cream-button">
@@ -100,7 +100,7 @@
                 <span class="p-1.5 bg-[#8B7355] dark:bg-[#52B788] rounded-xl text-white">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                 </span>
-                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v6.3</span>
+                <span class="text-base font-bold tracking-wider">RIYAD STUDIO v6.4</span>
             </div>
             <div class="flex items-center gap-2">
                 <button id="btn-theme-toggle" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#52B788] cream-button" title="切换深色/浅色模式">
@@ -115,10 +115,18 @@
         </div>
         <hr class="border-[#EFEAE2] dark:border-[#3E3834] hidden lg:block">
 
-        <!-- 模式选择 -->
+        <!-- 显眼的第一步：画幅比例选择 -->
+        <div class="flex flex-col gap-1.5 bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#8B7355]/20 dark:border-[#52B788]/30 shadow-sm">
+            <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="aspect-ratio" class="w-4 h-4"></i> 第一步：选择画布画幅比例
+            </span>
+            <div id="ratio-group" class="grid grid-cols-3 gap-2 mt-1"></div>
+        </div>
+
+        <!-- 第二步：核心排版模式选择 -->
         <div class="flex flex-col gap-1.5">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
-                <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 核心排版模式
+                <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 第二步：核心排版模式
             </span>
             <div class="grid grid-cols-2 gap-2">
                 <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
@@ -223,11 +231,11 @@
                     </div>
                     <div class="flex gap-2">
                         <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
-                        <select id="input-date-format" class="w-32 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
-                            <option value="DD MMM YYYY">04 APR 2026</option>
-                            <option value="YYYY.MM.DD">2026.04.04</option>
-                            <option value="MM/DD/YYYY">04/04/2026</option>
-                            <option value="Month DD, YYYY">April 04, 2026</option>
+                        <select id="input-date-format" class="w-36 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
+                            <option value="DD MMM YYYY">DD MMM YYYY (日 月 年)</option>
+                            <option value="YYYY.MM.DD">YYYY.MM.DD (年.月.日)</option>
+                            <option value="MM/DD/YYYY">MM/DD/YYYY (月/日/年)</option>
+                            <option value="Month DD, YYYY">Month DD, YYYY (英文全称)</option>
                         </select>
                     </div>
                 </div>
@@ -287,11 +295,6 @@
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="sliders" class="w-3.5 h-3.5"></i> 细节与尺寸微调
             </span>
-
-            <div class="flex items-center justify-between bg-[#FAF6F0] dark:bg-[#35302C] p-2 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35]">
-                <span class="text-[11px] font-medium ml-1">画幅比例</span>
-                <div id="ratio-group" class="flex gap-1"></div>
-            </div>
 
             <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col gap-2.5">
                 <div class="flex justify-between text-xs mb-0.5 font-medium">
@@ -371,7 +374,7 @@
                 <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
             </svg>
-            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V6.3 (Mint Choco)</span>
+            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V6.4 (Mint Choco)</span>
         </div>
 
     </div>
@@ -663,7 +666,7 @@
                 ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
                 ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
                 ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x + width - radius, y + height);
                 ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y);
                 ctx.closePath();
             }
@@ -685,7 +688,7 @@
                 SceneRenderer.drawScene(this.ctx, state, this.previewCanvas.width, this.previewCanvas.height, { isExport: false, showGrid: false });
 
                 const placeholder = document.getElementById('workspace-placeholder');
-                let hasImages = (state.mode === 'inverse') ? !!(state.inverse.imageA && state.inverse.imageB) : !!(state.story.bgImage || state.story.gridImages.some(img => img !== null));
+                let hasImages = (state.mode === 'inverse') ? !!(state.inverse.imageA || state.inverse.imageB) : !!(state.story.bgImage || state.story.gridImages.some(img => img !== null));
                 if (hasImages) placeholder.classList.add('opacity-0', 'pointer-events-none');
                 else placeholder.classList.remove('opacity-0', 'pointer-events-none');
             }
@@ -714,7 +717,6 @@
                 const x = touchX - rect.left; const y = touchY - rect.top;
                 const w = rect.width; const h = rect.height;
 
-                // 【修复核心】：严格精准收窄文字和日期的点选范围（只在文字附近精准命中，绝不全屏抢占）
                 const dateX = w * (state.dateLayer.offset.x / 100);
                 const dateY = h * (state.dateLayer.offset.y / 100);
                 if (state.dateLayer.show && Math.abs(x - dateX) < 80 && Math.abs(y - dateY) < 20) return 'dateLayer';
@@ -723,7 +725,6 @@
                 const textY = h * (state.textLayer.offset.y / 100);
                 if (state.textLayer.show && Math.abs(x - textX) < 100 && Math.abs(y - textY) < 20) return 'textLayer';
 
-                // 优先检测图片网格区域
                 if (state.mode === 'story') {
                     const st = state.story; const gridAreaW = w * (state.centerSize / 100); const gapPx = state.gridGap * (w / 320);
                     let cols = 2, rows = 2;
@@ -881,23 +882,30 @@
             rebuildRatioButtons() {
                 const group = document.getElementById('ratio-group');
                 group.innerHTML = '';
-                const ratios = state.mode === 'inverse' ? ['1-1', '3-4', '9-16'] : ['9-16', '3-4', '1-1'];
+                const ratios = [
+                    { key: '9-16', label: '9:16', desc: '竖屏海报' },
+                    { key: '3-4', label: '3:4', desc: '小红书卡片' },
+                    { key: '1-1', label: '1:1', desc: '正方形画幅' }
+                ];
+
                 ratios.forEach(r => {
                     const btn = document.createElement('button');
-                    btn.dataset.ratio = r;
-                    btn.className = `btn-ratio px-2.5 py-1 text-[10px] rounded-lg transition-all cream-button ${state.ratio === r ? 'bg-[#8B7355] dark:bg-[#52B788] text-white font-bold shadow-sm' : 'bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2]'}`;
-                    btn.textContent = r;
-                    btn.addEventListener('click', () => this.setRatio(r));
+                    btn.dataset.ratio = r.key;
+                    const isActive = state.ratio === r.key;
+                    btn.className = `btn-ratio flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all cream-button border ${
+                        isActive 
+                            ? 'bg-[#8B7355] dark:bg-[#52B788] text-white border-[#8B7355] dark:border-[#52B788] font-bold shadow-md scale-[1.02]' 
+                            : 'bg-white dark:bg-[#282421] border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2] hover:border-[#8B7355]/40'
+                    }`;
+                    btn.innerHTML = `<span class="text-xs font-bold">${r.label}</span><span class="text-[9px] opacity-80 scale-90">${r.desc}</span>`;
+                    btn.addEventListener('click', () => this.setRatio(r.key));
                     group.appendChild(btn);
                 });
             },
 
             setRatio(ratio) {
                 state.ratio = ratio; this.adaptWorkspaceScale();
-                document.querySelectorAll('.btn-ratio').forEach(btn => {
-                    if (btn.dataset.ratio === ratio) btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-[#8B7355] dark:bg-[#52B788] text-white font-bold transition-all cream-button shadow-sm";
-                    else btn.className = "btn-ratio px-2.5 py-1 text-[10px] rounded-lg bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2] transition-all cream-button";
-                });
+                this.rebuildRatioButtons();
                 Renderer.renderPreview();
             },
 
@@ -944,9 +952,53 @@
                 const sampleBg = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80";
                 const samples = ["https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=500&q=80"];
                 
-                let loaded = 0; const check = () => { loaded++; if (loaded === 5) { this.rebuildStoryGridUploadCells(); Renderer.renderPreview(); } };
-                const bgImg = new Image(); bgImg.crossOrigin = "anonymous"; bgImg.onload = () => { state.story.bgImage = bgImg; document.getElementById('story-bg-status').textContent = "已就绪"; check(); }; bgImg.src = sampleBg;
-                samples.forEach((src, i) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => { state.story.gridImages[i] = img; check(); }; img.src = src; });
+                // 1. 加载镜像互换模式样图 (图 A & 图 B)
+                const imgA = new Image(); imgA.crossOrigin = "anonymous";
+                imgA.onload = () => {
+                    state.inverse.imageA = imgA;
+                    document.getElementById('img-thumb-a').src = sampleBg;
+                    document.getElementById('preview-container-a').classList.remove('hidden');
+                    document.getElementById('placeholder-a').classList.add('hidden');
+                    Renderer.renderPreview();
+                };
+                imgA.src = sampleBg;
+
+                const imgB = new Image(); imgB.crossOrigin = "anonymous";
+                imgB.onload = () => {
+                    state.inverse.imageB = imgB;
+                    document.getElementById('img-thumb-b').src = samples[0];
+                    document.getElementById('preview-container-b').classList.remove('hidden');
+                    document.getElementById('placeholder-b').classList.add('hidden');
+                    Renderer.renderPreview();
+                };
+                imgB.src = samples[0];
+
+                // 2. 加载 Ins Story 模式样图
+                let loaded = 0; 
+                const check = () => { 
+                    loaded++; 
+                    if (loaded === 5) { 
+                        this.rebuildStoryGridUploadCells(); 
+                        Renderer.renderPreview(); 
+                    } 
+                };
+
+                const bgImg = new Image(); bgImg.crossOrigin = "anonymous"; 
+                bgImg.onload = () => { 
+                    state.story.bgImage = bgImg; 
+                    document.getElementById('story-bg-status').textContent = "已就绪"; 
+                    check(); 
+                }; 
+                bgImg.src = sampleBg;
+
+                samples.forEach((src, i) => { 
+                    const img = new Image(); img.crossOrigin = "anonymous"; 
+                    img.onload = () => { 
+                        state.story.gridImages[i] = img; 
+                        check(); 
+                    }; 
+                    img.src = src; 
+                });
             }
         };
 
