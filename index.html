@@ -49,13 +49,19 @@
                 max-height: 85vh;
             }
             #drawer-panel.state-collapsed {
-                transform: translateY(calc(100% - 64px));
+                transform: translateY(calc(100% - 56px));
             }
             #drawer-panel.state-half {
-                transform: translateY(45%);
+                transform: translateY(52%);
             }
             #drawer-panel.state-full {
                 transform: translateY(0%);
+            }
+
+            /* 移动端竖屏预览区上移，留出底部抽屉空间 */
+            #stage-viewport {
+                align-items: flex-start;
+                padding-top: 4.25rem;
             }
         }
 
@@ -66,7 +72,7 @@
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 340px;
+                width: 320px;
                 z-index: 50;
                 border-top-left-radius: 1.5rem;
                 border-bottom-left-radius: 1.5rem;
@@ -124,7 +130,7 @@
         </div>
     </header>
 
-    <!-- 主画幅预览舞台 (全屏自适应，根据抽屉展开动态偏移居中) -->
+    <!-- 主画幅预览舞台 (适度上移避开底部抽屉遮挡) -->
     <main id="stage-viewport" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
             <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#2D4A3E] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
@@ -144,13 +150,19 @@
         </div>
     </main>
 
-    <!-- 浮动遮罩（移动端展开抽屉时点击可收起） -->
+    <!-- 浮动遮罩（移动端全开抽屉时点击可收起） -->
     <div id="drawer-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
 
     <!-- 抽屉编辑面板区域 -->
     <aside id="drawer-panel" class="state-half lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#282421]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] flex flex-col drawer-transition shadow-2xl lg:shadow-none">
         
-        <!-- 移动端专享：顶部拖拽抓手条 (Drag Handle Bar) -->
+        <!-- 移动端横屏专享：抽屉边缘左侧悬浮显隐 Tab 按钮 -->
+        <button id="btn-side-drawer-tab" class="lg:hidden absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-16 bg-[#8B7355] dark:bg-[#52B788] text-white rounded-l-2xl shadow-lg flex flex-col items-center justify-center gap-1 z-50 cream-button" title="侧栏控制条">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+            <span class="text-[9px] font-bold writing-mode-vertical">面板</span>
+        </button>
+
+        <!-- 移动端竖屏专享：顶部拖拽抓手条 (Drag Handle Bar) -->
         <div id="drawer-drag-handle" class="lg:hidden w-full pt-3 pb-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing border-b border-[#EFEAE2]/50 dark:border-[#3E3834]/50 shrink-0 select-none">
             <div class="w-10 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mb-1"></div>
             <span class="text-[10px] text-zinc-400 font-medium">拖拽或点击切换编辑面板</span>
@@ -990,7 +1002,7 @@
             }
         };
 
-        /* 抽屉管理器：支持全端响应式折叠/吸附 */
+        /* 抽屉管理器：精细化处理移动端竖屏居中与移动端横屏左侧挂件按钮 */
         const DrawerManager = {
             panel: null, backdrop: null,
             mobileState: 'half', // 'collapsed' | 'half' | 'full'
@@ -1040,7 +1052,7 @@
                     }
                 }
 
-                // 动画完成后自适应画布缩放并重新居中
+                // 动画完成后实时根据避让高度缩放画布
                 setTimeout(() => {
                     LayerManager.adaptWorkspaceScale();
                     Renderer.renderPreview();
@@ -1049,6 +1061,7 @@
 
             bindDrawerEvents() {
                 document.getElementById('btn-toggle-drawer').addEventListener('click', () => this.toggle());
+                document.getElementById('btn-side-drawer-tab').addEventListener('click', () => this.toggle());
                 document.getElementById('btn-close-pc-drawer').addEventListener('click', () => this.close());
                 this.backdrop.addEventListener('click', () => this.close());
 
@@ -1185,13 +1198,23 @@
                 if (state.ratio === '1-1') { tw = 400; th = 400; } 
                 else if (state.ratio === '3-4') { tw = 360; th = 480; }
 
-                // 根据全屏及视口尺寸计算画布最大自适应缩放比例
-                const paddingW = 32;
-                const paddingH = 64;
-                const availableW = viewport.clientWidth - paddingW;
-                const availableH = viewport.clientHeight - paddingH;
+                // 计算可用宽高（在移动端竖屏半开抽屉时，扣除下方抽屉占用的空间，防止遮挡画幅）
+                let availableW = viewport.clientWidth - 32;
+                let availableH = viewport.clientHeight - 80;
 
-                const scale = Math.min(availableW / tw, availableH / th, 1.4);
+                const isPortraitMobile = window.innerWidth < 1024 && window.innerHeight > window.innerWidth;
+                if (isPortraitMobile) {
+                    // 移动竖屏模式：半开状态留出 45% 的底部空间，全开留出少量空间，折叠扣除 56px
+                    if (DrawerManager.mobileState === 'half') {
+                        availableH = viewport.clientHeight * 0.52 - 60;
+                    } else if (DrawerManager.mobileState === 'full') {
+                        availableH = viewport.clientHeight * 0.25;
+                    } else {
+                        availableH = viewport.clientHeight - 80;
+                    }
+                }
+
+                const scale = Math.min(availableW / tw, availableH / th, 1.3);
                 ws.style.width = `${tw * scale}px`; 
                 ws.style.height = `${th * scale}px`;
             },
