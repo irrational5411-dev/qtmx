@@ -83,9 +83,6 @@
                 </div>
                 <div>
                     <h3 class="text-xs font-bold">Riyad 美学排版引擎</h3>
-                    <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-[200px] mx-auto leading-relaxed">
-                        薄巧深色模式，独立文本拆分、多国字体与多图网格嵌套。
-                    </p>
                 </div>
             </div>
             <canvas id="preview-canvas" class="w-full h-full cursor-move border-0 block"></canvas>
@@ -267,11 +264,11 @@
                             <option value="Inter">现代无衬线</option>
                         </select>
                     </div>
-                    <!-- 文字字号微调滑动条 -->
+                    <!-- 文字字号微调滑动条 (初始 5.5%) -->
                     <div class="flex items-center gap-2 mt-1">
                         <span class="text-[10px] text-zinc-400 font-medium shrink-0">字号大小</span>
-                        <input type="range" id="input-text-size" min="4" max="30" value="12" step="0.5" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
-                        <span id="text-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">12%</span>
+                        <input type="range" id="input-text-size" min="1" max="25" value="5.5" step="0.5" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <span id="text-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">5.5%</span>
                     </div>
                 </div>
 
@@ -386,7 +383,7 @@
                 <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                 <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
             </svg>
-            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V6.4 (Mint Choco)</span>
+            <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V6.4</span>
         </div>
 
     </div>
@@ -465,7 +462,7 @@
                 show: true,
                 text: 'SHANGHAI // SEA & SUN',
                 fontFamily: 'Cinzel',
-                fontSize: 12,
+                fontSize: 5.5,
                 color: '#FFFFFF',
                 shadowBlur: 6,
                 offset: { x: 50, y: 82 } 
@@ -537,25 +534,54 @@
                 ctx.drawImage(img, drawX, drawY, drawW, drawH);
             },
 
+            drawActiveBorder(ctx, x, y, w, h, radiusPx) {
+                ctx.save();
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#52B788';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                this.drawRoundedPath(ctx, x, y, w, h, radiusPx);
+                ctx.stroke();
+                ctx.restore();
+            },
+
             drawInverseScene(ctx, stateData, width, height, options) {
                 const midY = height / 2; const inv = stateData.inverse;
+
+                // 上背景
                 ctx.save(); ctx.beginPath(); ctx.rect(0, 0, width, midY); ctx.clip();
                 this.drawLayerImage(ctx, inv[inv.layers.topBg.imgKey], 0, 0, width, midY, inv.layers.topBg.offset, inv.layers.topBg.scale);
                 ctx.restore();
+                if (!options.isExport && stateData.activeLayer === 'inv_topBg') {
+                    this.drawActiveBorder(ctx, 4, 4, width - 8, midY - 8, 0);
+                }
 
+                // 下背景
                 ctx.save(); ctx.beginPath(); ctx.rect(0, midY, width, midY); ctx.clip();
                 this.drawLayerImage(ctx, inv[inv.layers.bottomBg.imgKey], 0, midY, width, midY, inv.layers.bottomBg.offset, inv.layers.bottomBg.scale);
                 ctx.restore();
+                if (!options.isExport && stateData.activeLayer === 'inv_bottomBg') {
+                    this.drawActiveBorder(ctx, 4, midY + 4, width - 8, midY - 8, 0);
+                }
 
                 const boxSize = width * (stateData.centerSize / 100);
                 const radiusPx = stateData.radius * (width / 320); 
                 const borderPx = stateData.borderWidth * (width / 320); 
 
+                // 上前景卡片
                 const topBoxX = width / 2 - boxSize / 2; const topBoxY = midY / 2 - boxSize / 2;
                 this.drawNestedBox(ctx, inv[inv.layers.topFg.imgKey], topBoxX, topBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.topFg.offset, inv.layers.topFg.scale, width);
+                if (!options.isExport && stateData.activeLayer === 'inv_topFg') {
+                    this.drawActiveBorder(ctx, topBoxX, topBoxY, boxSize, boxSize, radiusPx);
+                }
 
+                // 下前景卡片
                 const bottomBoxX = width / 2 - boxSize / 2; const bottomBoxY = midY + (midY / 2) - boxSize / 2;
                 this.drawNestedBox(ctx, inv[inv.layers.bottomFg.imgKey], bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx, borderPx, stateData.borderColor, inv.layers.bottomFg.offset, inv.layers.bottomFg.scale, width);
+                if (!options.isExport && stateData.activeLayer === 'inv_bottomFg') {
+                    this.drawActiveBorder(ctx, bottomBoxX, bottomBoxY, boxSize, boxSize, radiusPx);
+                }
             },
 
             drawStoryScene(ctx, stateData, width, height, options) {
@@ -566,6 +592,10 @@
                     ctx.restore();
                 } else {
                     ctx.fillStyle = '#2D3748'; ctx.fillRect(0, 0, width, height);
+                }
+
+                if (!options.isExport && stateData.activeLayer === 'storyBg') {
+                    this.drawActiveBorder(ctx, 4, 4, width - 8, height - 8, 0);
                 }
 
                 const gridAreaW = width * (stateData.centerSize / 100);
@@ -591,6 +621,10 @@
                         const cellX = gridStartX + c * (cellW + gapPx);
                         const cellY = gridStartY + r * (cellH + gapPx);
                         this.drawNestedBox(ctx, st.gridImages[cellIndex], cellX, cellY, cellW, cellH, radiusPx, borderPx, stateData.borderColor, st.gridLayers[cellIndex].offset, st.gridLayers[cellIndex].scale, width);
+                        
+                        if (!options.isExport && stateData.activeLayer === `storyCell_${cellIndex}`) {
+                            this.drawActiveBorder(ctx, cellX, cellY, cellW, cellH, radiusPx);
+                        }
                         cellIndex++;
                     }
                 }
@@ -774,7 +808,7 @@
             getActiveLayerTarget() {
                 const layer = state.activeLayer;
                 if (layer === 'dateLayer') return { offset: state.dateLayer.offset, get scale() { return state.dateLayer.fontSize / 4.2; }, set scale(v) { state.dateLayer.fontSize = Math.max(1, v * 4.2); } };
-                if (layer === 'textLayer') return { offset: state.textLayer.offset, get scale() { return state.textLayer.fontSize / 12; }, set scale(v) { state.textLayer.fontSize = Math.max(2, v * 12); } };
+                if (layer === 'textLayer') return { offset: state.textLayer.offset, get scale() { return state.textLayer.fontSize / 5.5; }, set scale(v) { state.textLayer.fontSize = Math.max(1, v * 5.5); } };
                 if (layer === 'storyBg') return { offset: state.story.bgOffset, get scale() { return state.story.bgScale; }, set scale(v) { state.story.bgScale = Math.max(0.2, v); } };
                 if (layer && layer.startsWith('storyCell_')) return state.story.gridLayers[parseInt(layer.replace('storyCell_', ''))];
                 if (layer && layer.startsWith('inv_')) {
