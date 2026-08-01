@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V7.1 美学排版生成器</title>
+    <title>Riyad Studio V7.2 抹茶奶油排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -36,7 +36,7 @@
             transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, width 0.35s ease;
         }
 
-        /* 1. 竖屏模式 (Portrait View - 包含手机和平板竖屏)：严格仅在 portrait 时触发底部抽屉 */
+        /* 1. 竖屏模式 (Portrait View - 包含手机和平板竖屏) */
         @media (orientation: portrait) {
             #drawer-panel {
                 position: fixed;
@@ -65,9 +65,15 @@
             #btn-side-drawer-tab {
                 display: none !important;
             }
+
+            /* 移动竖屏画板整体往上上移，并留出动态顶部安全边距 */
+            #stage-viewport {
+                align-items: flex-start !important;
+                padding-top: calc(4.25rem + env(safe-area-inset-top));
+            }
         }
 
-        /* 2. 横屏模式 (Landscape View - 包含手机横屏、iPad横屏及移动设备)：右侧侧滑抽屉 */
+        /* 2. 横屏模式 (Landscape View - 包含手机横屏、iPad横屏) */
         @media (orientation: landscape) and (max-width: 1023px) {
             #drawer-panel {
                 position: fixed;
@@ -111,7 +117,7 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden bg-[#FAF6F0] text-[#4A3E3D] dark:bg-[#1E1B18] dark:text-[#EFEAE2] relative flex flex-col lg:flex-row">
+<body class="h-screen w-screen overflow-hidden bg-[#FAF6F0] text-[#4A3E3D] dark:bg-[#1C2321] dark:text-[#EAE6E1] relative flex flex-col lg:flex-row">
 
     <div style="position:absolute; opacity:0; pointer-events:none;">
         <span style="font-family: 'Cinzel';">preload</span>
@@ -122,25 +128,25 @@
     </div>
 
     <!-- 顶栏顶部通用浮动控制工具条 -->
-    <header id="main-header" class="absolute top-0 left-0 right-0 h-14 px-4 flex items-center justify-between z-40 pointer-events-none">
-        <div class="flex items-center gap-2 pointer-events-auto bg-white/70 dark:bg-[#282421]/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#EFEAE2] dark:border-[#3E3834] shadow-sm">
-            <span class="p-1 bg-[#8B7355] dark:bg-[#52B788] rounded-lg text-white">
+    <header id="main-header" class="absolute top-0 left-0 right-0 h-14 px-4 flex items-center justify-between z-40 pointer-events-none pt-[env(safe-area-inset-top)]">
+        <div class="flex items-center gap-2 pointer-events-auto bg-white/70 dark:bg-[#2A3431]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#EFEAE2] dark:border-[#3A4441] shadow-sm">
+            <span class="p-1 bg-[#8B7355] dark:bg-[#A3C9A8] rounded-lg text-white dark:text-[#1C2321]">
                 <i data-lucide="camera" class="w-3.5 h-3.5"></i>
             </span>
-            <span class="text-xs font-bold tracking-wider">RIYAD V7.1</span>
+            <span class="text-xs font-bold tracking-wider">RIYAD V7.2</span>
         </div>
         
         <div class="flex items-center gap-2 pointer-events-auto">
-            <button id="btn-theme-toggle" class="p-2 rounded-full bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md border border-[#EFEAE2] dark:border-[#3E3834] text-[#4A3E3D] dark:text-[#52B788] cream-button shadow-sm" title="切换主题模式">
+            <button id="btn-theme-toggle" class="p-2 rounded-full bg-white/80 dark:bg-[#2A3431]/80 backdrop-blur-md border border-[#EFEAE2] dark:border-[#3A4441] text-[#4A3E3D] dark:text-[#A3C9A8] cream-button shadow-sm" title="切换主题模式">
                 <i data-lucide="sun" class="w-4 h-4 dark:hidden"></i>
                 <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
             </button>
-            <button id="btn-sample-assets" class="text-xs bg-white/80 dark:bg-[#282421]/80 backdrop-blur-md text-[#8B7355] dark:text-[#52B788] border border-[#8B7355]/30 dark:border-[#52B788]/40 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 cream-button shadow-sm">
+            <button id="btn-sample-assets" class="text-xs bg-white/80 dark:bg-[#2A3431]/80 backdrop-blur-md text-[#8B7355] dark:text-[#A3C9A8] border border-[#8B7355]/30 dark:border-[#A3C9A8]/40 px-3 py-1.5 rounded-full font-medium flex items-center gap-1 cream-button shadow-sm">
                 <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
                 <span>样图</span>
             </button>
             <!-- 抽屉显隐主触发开关（全端通用） -->
-            <button id="btn-toggle-drawer" class="p-2 rounded-full bg-[#8B7355] dark:bg-[#52B788] text-white shadow-md cream-button flex items-center justify-center" title="展开/收起控制抽屉 (快捷键 Tab)">
+            <button id="btn-toggle-drawer" class="p-2 rounded-full bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] shadow-md cream-button flex items-center justify-center" title="展开/收起控制抽屉 (快捷键 Tab)">
                 <i data-lucide="sliders" class="w-4 h-4"></i>
             </button>
         </div>
@@ -149,13 +155,13 @@
     <!-- 主画幅预览舞台 -->
     <main id="stage-viewport" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
-            <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#2D4A3E] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
-            <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] dark:bg-[#1E382F] blur-[100px] bottom-1/4 right-1/4"></div>
+            <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#2A3A36] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
+            <div class="absolute w-[300px] h-[300px] rounded-full bg-[#E6D0BE] dark:bg-[#212E2A] blur-[100px] bottom-1/4 right-1/4"></div>
         </div>
 
-        <div id="workspace" class="relative bg-white dark:bg-[#282421] shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 flex items-center justify-center border border-[#EFEAE2] dark:border-[#3E3834]" style="width: 320px; height: 568px; border-radius: 12px;">
-            <div id="workspace-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6F0]/95 dark:bg-[#282421]/95 z-30 gap-3.5 text-center px-6 transition-opacity duration-300">
-                <div class="w-12 h-12 rounded-full bg-[#8B7355]/10 border border-[#8B7355]/20 flex items-center justify-center text-[#8B7355] dark:text-[#52B788]">
+        <div id="workspace" class="relative bg-white dark:bg-[#2A3431] shadow-[0_20px_50px_-15px_rgba(139,115,85,0.15)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 flex items-center justify-center border border-[#EFEAE2] dark:border-[#3A4441]" style="width: 320px; height: 568px; border-radius: 12px;">
+            <div id="workspace-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6F0]/95 dark:bg-[#2A3431]/95 z-30 gap-3.5 text-center px-6 transition-opacity duration-300">
+                <div class="w-12 h-12 rounded-full bg-[#8B7355]/10 border border-[#8B7355]/20 flex items-center justify-center text-[#8B7355] dark:text-[#A3C9A8]">
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
                 </div>
                 <div>
@@ -170,24 +176,24 @@
     <div id="drawer-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
 
     <!-- 抽屉编辑面板区域 -->
-    <aside id="drawer-panel" class="state-half lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#282421]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] flex flex-col drawer-transition shadow-2xl lg:shadow-none">
+    <aside id="drawer-panel" class="state-half lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#2A3431]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3A4441] flex flex-col drawer-transition shadow-2xl lg:shadow-none">
         
         <!-- 横屏专享：抽屉边缘左侧悬浮显隐 Tab 按钮 -->
-        <button id="btn-side-drawer-tab" class="absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-16 bg-[#8B7355] dark:bg-[#52B788] text-white rounded-l-2xl shadow-lg flex-col items-center justify-center gap-1 z-50 cream-button" title="侧栏控制条">
+        <button id="btn-side-drawer-tab" class="absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-16 bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] rounded-l-2xl shadow-lg flex-col items-center justify-center gap-1 z-50 cream-button" title="侧栏控制条">
             <i data-lucide="sliders" class="w-4 h-4"></i>
             <span class="text-[9px] font-bold writing-mode-vertical">面板</span>
         </button>
 
         <!-- 竖屏专享：顶部拖拽抓手条 (Drag Handle Bar) -->
-        <div id="drawer-drag-handle" class="w-full pt-3 pb-2 flex-col items-center justify-center cursor-grab active:cursor-grabbing border-b border-[#EFEAE2]/50 dark:border-[#3E3834]/50 shrink-0 select-none">
+        <div id="drawer-drag-handle" class="w-full pt-3 pb-2 flex-col items-center justify-center cursor-grab active:cursor-grabbing border-b border-[#EFEAE2]/50 dark:border-[#3A4441]/50 shrink-0 select-none">
             <div class="w-10 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mb-1"></div>
             <span class="text-[10px] text-zinc-400 font-medium">拖拽或点击切换编辑面板</span>
         </div>
 
         <!-- 面板头部标题与控制按钮 (PC端/大屏显示) -->
-        <div class="hidden lg:flex items-center justify-between px-5 py-4 border-b border-[#EFEAE2] dark:border-[#3E3834] shrink-0">
+        <div class="hidden lg:flex items-center justify-between px-5 py-4 border-b border-[#EFEAE2] dark:border-[#3A4441] shrink-0">
             <div class="flex items-center gap-2">
-                <i data-lucide="sliders" class="w-4 h-4 text-[#8B7355] dark:text-[#52B788]"></i>
+                <i data-lucide="sliders" class="w-4 h-4 text-[#8B7355] dark:text-[#A3C9A8]"></i>
                 <span class="text-xs font-bold tracking-wider">排版参数控制台</span>
             </div>
             <button id="btn-close-pc-drawer" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors" title="隐藏面板 (Tab)">
@@ -199,8 +205,8 @@
         <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 no-scrollbar pb-24 lg:pb-8">
 
             <!-- 步骤 1：画幅比例选择 -->
-            <div class="flex flex-col gap-1.5 bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#8B7355]/20 dark:border-[#52B788]/30 shadow-sm">
-                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1.5">
+            <div class="flex flex-col gap-1.5 bg-[#FAF6F0] dark:bg-[#212826] p-3 rounded-2xl border border-[#8B7355]/20 dark:border-[#A3C9A8]/30 shadow-sm">
+                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1.5">
                     <i data-lucide="aspect-ratio" class="w-4 h-4"></i> 第一步：选择画布比例
                 </span>
                 <div id="ratio-group" class="grid grid-cols-3 gap-2 mt-1"></div>
@@ -208,14 +214,14 @@
 
             <!-- 步骤 2：核心排版模式 -->
             <div class="flex flex-col gap-1.5">
-                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                     <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 第二步：核心排版模式
                 </span>
                 <div class="grid grid-cols-2 gap-2">
-                    <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
+                    <button id="mode-btn-inverse" data-mode="inverse" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] text-[#4A3E3D] dark:text-[#EAE6E1] font-bold transition-all cream-button flex items-center justify-center gap-1.5">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 镜像互换模式
                     </button>
-                    <button id="mode-btn-story" data-mode="story" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] dark:bg-[#52B788] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5">
+                    <button id="mode-btn-story" data-mode="story" class="btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5">
                         <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Ins Story 拼图
                     </button>
                 </div>
@@ -224,30 +230,30 @@
             <!-- 模式 A：镜像互换控制组 -->
             <div id="panel-inverse-controls" class="flex flex-col gap-3 hidden">
                 <div class="flex flex-col gap-2">
-                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> 上传素材 (双图)
                     </span>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div class="relative">
                             <input type="file" id="upload-a" accept="image/*" class="hidden">
-                            <label for="upload-a" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] dark:border-[#524942] hover:border-[#8B7355] dark:hover:border-[#52B788] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#35302C] transition-all overflow-hidden relative">
+                            <label for="upload-a" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] dark:border-[#3A4441] hover:border-[#8B7355] dark:hover:border-[#A3C9A8] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#212826] transition-all overflow-hidden relative">
                                 <div id="preview-container-a" class="absolute inset-0 w-full h-full hidden">
                                     <img id="img-thumb-a" class="w-full h-full object-cover">
                                 </div>
                                 <div id="placeholder-a" class="flex flex-col items-center justify-center text-center p-1">
-                                    <i data-lucide="plus" class="w-4 h-4 text-[#8B7355] dark:text-[#52B788]"></i>
+                                    <i data-lucide="plus" class="w-4 h-4 text-[#8B7355] dark:text-[#A3C9A8]"></i>
                                     <span class="text-[11px] font-medium mt-0.5">图 A</span>
                                 </div>
                             </label>
                         </div>
                         <div class="relative">
                             <input type="file" id="upload-b" accept="image/*" class="hidden">
-                            <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] dark:border-[#524942] hover:border-[#8B7355] dark:hover:border-[#52B788] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#35302C] transition-all overflow-hidden relative">
+                            <label for="upload-b" class="flex flex-col items-center justify-center h-20 border border-dashed border-[#CBBFB0] dark:border-[#3A4441] hover:border-[#8B7355] dark:hover:border-[#A3C9A8] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#212826] transition-all overflow-hidden relative">
                                 <div id="preview-container-b" class="absolute inset-0 w-full h-full hidden">
                                     <img id="img-thumb-b" class="w-full h-full object-cover">
                                 </div>
                                 <div id="placeholder-b" class="flex flex-col items-center justify-center text-center p-1">
-                                    <i data-lucide="plus" class="w-4 h-4 text-[#8B7355] dark:text-[#52B788]"></i>
+                                    <i data-lucide="plus" class="w-4 h-4 text-[#8B7355] dark:text-[#A3C9A8]"></i>
                                     <span class="text-[11px] font-medium mt-0.5">图 B</span>
                                 </div>
                             </label>
@@ -259,14 +265,14 @@
             <!-- 模式 B：Ins Story 多图网格控制组 -->
             <div id="panel-story-controls" class="flex flex-col gap-3">
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="image" class="w-3.5 h-3.5"></i> 1. 全屏背景图片
                     </span>
                     <div class="relative">
                         <input type="file" id="upload-story-bg" accept="image/*" class="hidden">
-                        <label for="upload-story-bg" class="flex items-center justify-between px-3 py-2.5 border border-dashed border-[#CBBFB0] dark:border-[#524942] hover:border-[#8B7355] dark:hover:border-[#52B788] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#35302C]">
+                        <label for="upload-story-bg" class="flex items-center justify-between px-3 py-2.5 border border-dashed border-[#CBBFB0] dark:border-[#3A4441] hover:border-[#8B7355] dark:hover:border-[#A3C9A8] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#212826]">
                             <span class="text-xs font-medium flex items-center gap-2">
-                                <i data-lucide="upload" class="w-4 h-4 text-[#8B7355] dark:text-[#52B788]"></i> 点击上传背景图片
+                                <i data-lucide="upload" class="w-4 h-4 text-[#8B7355] dark:text-[#A3C9A8]"></i> 点击上传背景图片
                             </span>
                             <span id="story-bg-status" class="text-[10px] text-zinc-400">未选择</span>
                         </label>
@@ -274,21 +280,21 @@
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="grid-3x3" class="w-3.5 h-3.5"></i> 2. 中央拼图布局
                     </span>
                     <div class="grid grid-cols-4 gap-1.5">
-                        <button data-layout="1" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] font-medium">单图</button>
-                        <button data-layout="2-v" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] font-medium">双图列</button>
-                        <button data-layout="2-2" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] dark:bg-[#52B788] text-white font-bold shadow-sm">4宫格</button>
-                        <button data-layout="2-3" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] font-medium">6宫格</button>
+                        <button data-layout="1" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] font-medium">单图</button>
+                        <button data-layout="2-v" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] font-medium">双图列</button>
+                        <button data-layout="2-2" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] font-bold shadow-sm">4宫格</button>
+                        <button data-layout="2-3" class="btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] font-medium">6宫格</button>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center justify-between">
                         <span class="flex items-center gap-1"><i data-lucide="images" class="w-3.5 h-3.5"></i> 3. 嵌套图片上传</span>
-                        <label for="upload-story-grid-multi" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-normal cursor-pointer underline">批量选择</label>
+                        <label for="upload-story-grid-multi" class="text-[10px] text-[#8B7355] dark:text-[#A3C9A8] font-normal cursor-pointer underline">批量选择</label>
                         <input type="file" id="upload-story-grid-multi" accept="image/*" multiple class="hidden">
                     </span>
                     <div id="story-grid-upload-cells" class="grid grid-cols-4 gap-2"></div>
@@ -297,24 +303,24 @@
 
             <!-- 文本排版增强模块 -->
             <div class="flex flex-col gap-2.5">
-                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                     <i data-lucide="type" class="w-3.5 h-3.5"></i> 独立文本排版设计
                 </span>
-                <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-3.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col gap-3.5">
+                <div class="bg-[#FAF6F0] dark:bg-[#212826] p-3.5 rounded-2xl border border-[#EFEAE2] dark:border-[#3A4441] flex flex-col gap-3.5">
                     
                     <!-- 1. 日期图层模块 -->
                     <div class="flex flex-col gap-1.5">
                         <div class="flex items-center justify-between">
-                            <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#52B788]">① 日期标注层</label>
+                            <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#A3C9A8]">① 日期标注层</label>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="chk-show-date" checked class="sr-only peer">
-                                <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#52B788]"></div>
+                                <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#A3C9A8]"></div>
                                 <span class="ml-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">显示</span>
                             </label>
                         </div>
                         <div class="flex gap-2">
-                            <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
-                            <select id="input-date-format" class="w-36 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
+                            <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#1C2321] border border-[#EFEAE2] dark:border-[#3A4441] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#A3C9A8]">
+                            <select id="input-date-format" class="w-36 bg-white dark:bg-[#1C2321] border border-[#EFEAE2] dark:border-[#3A4441] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#A3C9A8]">
                                 <option value="DD MMM YYYY">DD MMM YYYY (日 月 年)</option>
                                 <option value="YYYY.MM.DD">YYYY.MM.DD (年.月.日)</option>
                                 <option value="MM/DD/YYYY">MM/DD/YYYY (月/日/年)</option>
@@ -324,24 +330,24 @@
                         <!-- 日期字号微调滑动条 -->
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[10px] text-zinc-400 font-medium shrink-0">字号大小</span>
-                            <input type="range" id="input-date-size" min="1.5" max="10" value="4.2" step="0.1" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
-                            <span id="date-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">4.2%</span>
+                            <input type="range" id="input-date-size" min="1.5" max="10" value="4.2" step="0.1" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
+                            <span id="date-size-val" class="text-[10px] text-[#8B7355] dark:text-[#A3C9A8] font-bold w-10 text-right">4.2%</span>
                         </div>
                     </div>
 
                     <!-- 2. 自由文字图层模块 -->
-                    <div class="flex flex-col gap-1.5 pt-2.5 border-t border-[#EFEAE2] dark:border-[#433B35]">
+                    <div class="flex flex-col gap-1.5 pt-2.5 border-t border-[#EFEAE2] dark:border-[#3A4441]">
                         <div class="flex items-center justify-between">
-                            <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#52B788]">② 自由文字层</label>
+                            <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#A3C9A8]">② 自由文字层</label>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="chk-show-text" checked class="sr-only peer">
-                                <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#52B788]"></div>
+                                <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#A3C9A8]"></div>
                                 <span class="ml-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">显示</span>
                             </label>
                         </div>
                         <div class="flex gap-2">
-                            <input type="text" id="input-free-text" value="SHANGHAI // SEA & SUN" placeholder="输入文字..." class="w-3/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
-                            <select id="input-font-family" class="w-2/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-1 py-1.5 text-xs focus:outline-none focus:border-[#52B788]">
+                            <input type="text" id="input-free-text" value="SHANGHAI // SEA & SUN" placeholder="输入文字..." class="w-3/5 bg-white dark:bg-[#1C2321] border border-[#EFEAE2] dark:border-[#3A4441] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#A3C9A8]">
+                            <select id="input-font-family" class="w-2/5 bg-white dark:bg-[#1C2321] border border-[#EFEAE2] dark:border-[#3A4441] rounded-lg px-1 py-1.5 text-xs focus:outline-none focus:border-[#A3C9A8]">
                                 <option value="Cinzel">英·衬线</option>
                                 <option value="Caveat">英·手写</option>
                                 <option value="Noto Serif SC">中·思源宋</option>
@@ -353,22 +359,22 @@
                         <!-- 文字字号微调滑动条 (初始 5.5%) -->
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[10px] text-zinc-400 font-medium shrink-0">字号大小</span>
-                            <input type="range" id="input-text-size" min="1" max="25" value="5.5" step="0.5" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
-                            <span id="text-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">5.5%</span>
+                            <input type="range" id="input-text-size" min="1" max="25" value="5.5" step="0.5" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
+                            <span id="text-size-val" class="text-[10px] text-[#8B7355] dark:text-[#A3C9A8] font-bold w-10 text-right">5.5%</span>
                         </div>
                     </div>
 
                     <!-- 3. 5 大位置预设与样式控制 -->
-                    <div class="flex flex-col gap-2 pt-2.5 border-t border-[#EFEAE2] dark:border-[#433B35]">
+                    <div class="flex flex-col gap-2 pt-2.5 border-t border-[#EFEAE2] dark:border-[#3A4441]">
                         <div class="flex items-center justify-between text-[11px] font-medium">
                             <span>文字 5 大位置预设</span>
                         </div>
                         <div class="grid grid-cols-5 gap-1">
-                            <button id="btn-text-pos-top" class="bg-white dark:bg-[#282421] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">画幅顶部</button>
-                            <button id="btn-text-pos-above" class="bg-white dark:bg-[#282421] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">拼图上方</button>
-                            <button id="btn-text-pos-center" class="bg-white dark:bg-[#282421] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">正中央</button>
-                            <button id="btn-text-pos-below" class="bg-white dark:bg-[#282421] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">拼图下方</button>
-                            <button id="btn-text-pos-bottom" class="bg-white dark:bg-[#282421] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">画幅底部</button>
+                            <button id="btn-text-pos-top" class="bg-white dark:bg-[#1C2321] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">画幅顶部</button>
+                            <button id="btn-text-pos-above" class="bg-white dark:bg-[#1C2321] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">拼图上方</button>
+                            <button id="btn-text-pos-center" class="bg-white dark:bg-[#1C2321] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">正中央</button>
+                            <button id="btn-text-pos-below" class="bg-white dark:bg-[#1C2321] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">拼图下方</button>
+                            <button id="btn-text-pos-bottom" class="bg-white dark:bg-[#1C2321] border border-zinc-200 dark:border-zinc-700 py-1 rounded text-[10px] hover:opacity-80">画幅底部</button>
                         </div>
                         <div class="flex items-center gap-3 mt-1">
                             <div class="flex items-center gap-1.5">
@@ -377,7 +383,7 @@
                             </div>
                             <div class="flex-1 flex items-center gap-2">
                                 <span class="text-[10px] text-zinc-400">阴影</span>
-                                <input type="range" id="input-text-shadow" min="0" max="20" value="6" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                                <input type="range" id="input-text-shadow" min="0" max="20" value="6" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                             </div>
                         </div>
                     </div>
@@ -387,34 +393,34 @@
 
             <!-- 细节与尺寸微调 (通用) -->
             <div class="flex flex-col gap-2.5">
-                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
+                <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#A3C9A8] uppercase tracking-wider flex items-center gap-1">
                     <i data-lucide="sliders" class="w-3.5 h-3.5"></i> 细节与尺寸微调
                 </span>
 
-                <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col gap-2.5">
+                <div class="bg-[#FAF6F0] dark:bg-[#212826] p-3 rounded-2xl border border-[#EFEAE2] dark:border-[#3A4441] flex flex-col gap-2.5">
                     <div class="flex justify-between text-xs mb-0.5 font-medium">
                         <span>中央图片区域占比 (Size)</span>
-                        <span id="center-size-val" class="text-[#8B7355] dark:text-[#52B788] font-bold">55%</span>
+                        <span id="center-size-val" class="text-[#8B7355] dark:text-[#A3C9A8] font-bold">55%</span>
                     </div>
-                    <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                    <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                     
-                    <div id="row-grid-gap" class="border-t border-[#EFEAE2] dark:border-[#433B35] pt-2 flex flex-col gap-1.5">
+                    <div id="row-grid-gap" class="border-t border-[#EFEAE2] dark:border-[#3A4441] pt-2 flex flex-col gap-1.5">
                         <div class="flex justify-between text-[11px] font-medium">
                             <span>图片缝隙间距 (Gap)</span>
-                            <span id="grid-gap-val" class="text-[#8B7355] dark:text-[#52B788] font-bold">2px</span>
+                            <span id="grid-gap-val" class="text-[#8B7355] dark:text-[#A3C9A8] font-bold">2px</span>
                         </div>
-                        <input type="range" id="input-grid-gap" min="0" max="20" value="2" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <input type="range" id="input-grid-gap" min="0" max="20" value="2" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                     </div>
 
-                    <div class="border-t border-[#EFEAE2] dark:border-[#433B35] pt-2 flex flex-col gap-1.5">
+                    <div class="border-t border-[#EFEAE2] dark:border-[#3A4441] pt-2 flex flex-col gap-1.5">
                         <div class="flex justify-between text-[11px] font-medium">
                             <span>边框厚度 (Border)</span>
-                            <span id="border-width-val" class="text-[#8B7355] dark:text-[#52B788] font-bold">0px</span>
+                            <span id="border-width-val" class="text-[#8B7355] dark:text-[#A3C9A8] font-bold">0px</span>
                         </div>
-                        <input type="range" id="input-border-width" min="0" max="16" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <input type="range" id="input-border-width" min="0" max="16" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                     </div>
 
-                    <div class="flex items-center justify-between border-t border-[#EFEAE2] dark:border-[#433B35] pt-2">
+                    <div class="flex items-center justify-between border-t border-[#EFEAE2] dark:border-[#3A4441] pt-2">
                         <span class="text-[11px] font-medium">边框颜色</span>
                         <div class="flex items-center gap-1.5">
                             <button data-color="#FFFFFF" class="btn-preset-color w-4 h-4 rounded-full border border-zinc-300 bg-white" title="奶白色"></button>
@@ -425,41 +431,41 @@
                     </div>
                 </div>
 
-                <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex items-center justify-between">
+                <div class="bg-[#FAF6F0] dark:bg-[#212826] p-3 rounded-2xl border border-[#EFEAE2] dark:border-[#3A4441] flex items-center justify-between">
                     <span class="text-[11px] font-bold flex items-center gap-1">
-                        <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-[#8B7355] dark:text-[#52B788]"></i> 当前操控图层
+                        <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-[#8B7355] dark:text-[#A3C9A8]"></i> 当前操控图层
                     </span>
-                    <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] dark:bg-[#52B788] text-white font-bold">自由文字层</span>
+                    <span id="active-layer-indicator" class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] font-bold">自由文字层</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col justify-between">
+                    <div class="bg-[#FAF6F0] dark:bg-[#212826] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#3A4441] flex flex-col justify-between">
                         <div class="flex justify-between text-[11px] mb-1 font-semibold">
                             <span>卡片圆角 (Corner)</span>
-                            <span id="radius-val" class="text-[#8B7355] dark:text-[#52B788]">0px</span>
+                            <span id="radius-val" class="text-[#8B7355] dark:text-[#A3C9A8]">0px</span>
                         </div>
-                        <input type="range" id="input-radius" min="0" max="24" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <input type="range" id="input-radius" min="0" max="24" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                     </div>
-                    <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col justify-between">
+                    <div class="bg-[#FAF6F0] dark:bg-[#212826] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#3A4441] flex flex-col justify-between">
                         <div class="flex justify-between text-[11px] mb-1 font-semibold">
                             <span>噪点 (Grain)</span>
-                            <span id="grain-val" class="text-[#8B7355] dark:text-[#52B788]">6%</span>
+                            <span id="grain-val" class="text-[#8B7355] dark:text-[#A3C9A8]">6%</span>
                         </div>
-                        <input type="range" id="input-grain" min="0" max="15" value="6" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <input type="range" id="input-grain" min="0" max="15" value="6" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#A3C9A8]">
                     </div>
                 </div>
             </div>
 
             <!-- 4. 保存大图按钮 -->
             <div class="mt-2 pt-1">
-                <button id="btn-download" class="w-full bg-[#8B7355] dark:bg-[#52B788] hover:bg-[#725E45] dark:hover:bg-[#40916c] text-white font-bold py-3.5 px-4 rounded-full shadow-lg shadow-[#8B7355]/10 flex items-center justify-center gap-2 transition-all cream-button">
+                <button id="btn-download" class="w-full bg-[#8B7355] dark:bg-[#A3C9A8] hover:bg-[#725E45] dark:hover:bg-[#8eb893] text-white dark:text-[#1C2321] font-bold py-3.5 px-4 rounded-full shadow-lg shadow-[#8B7355]/10 flex items-center justify-center gap-2 transition-all cream-button">
                     <i data-lucide="download" class="w-4 h-4"></i>
                     <span class="text-xs tracking-wider">保存超清海报原图</span>
                 </button>
             </div>
 
-            <div class="mt-4 flex flex-col items-center justify-center gap-2 py-4 border-t border-[#FAF1E6] dark:border-[#3E3834] shrink-0 pb-12">
-                <svg class="w-40 h-16 text-[#8B7355]/30 dark:text-[#52B788]/30 fill-current opacity-80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+            <div class="mt-4 flex flex-col items-center justify-center gap-2 py-4 border-t border-[#FAF1E6] dark:border-[#3A4441] shrink-0 pb-12">
+                <svg class="w-40 h-16 text-[#8B7355]/30 dark:text-[#A3C9A8]/30 fill-current opacity-80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
                     <path d="M 25,50 C 25,40 35,35 45,40 C 50,30 65,30 70,40 C 80,40 85,48 75,55 C 75,55 25,55 25,50 Z" />
                     <path d="M 125,45 C 125,37 133,32 143,37 C 148,27 163,27 168,37 C 178,37 183,45 173,52 C 173,52 125,52 125,45 Z" />
                     <rect x="92" y="42" width="18" height="15" rx="3" />
@@ -469,7 +475,7 @@
                     <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                     <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
                 </svg>
-                <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V7.1</span>
+                <span class="text-[10px] text-[#8B7355]/60 dark:text-[#A3C9A8]/60 tracking-wider">Aesthetic Poster Engine V7.2</span>
             </div>
 
         </div>
@@ -624,7 +630,7 @@
             drawActiveBorder(ctx, x, y, w, h, radiusPx) {
                 ctx.save();
                 ctx.shadowColor = 'transparent';
-                ctx.strokeStyle = '#52B788';
+                ctx.strokeStyle = '#A3C9A8';
                 ctx.lineWidth = 3;
                 ctx.setLineDash([6, 6]);
                 ctx.beginPath();
@@ -678,7 +684,7 @@
                     this.drawLayerImage(ctx, st.bgImage, 0, 0, width, height, st.bgOffset, st.bgScale);
                     ctx.restore();
                 } else {
-                    ctx.fillStyle = '#2D3748'; ctx.fillRect(0, 0, width, height);
+                    ctx.fillStyle = '#212826'; ctx.fillRect(0, 0, width, height);
                 }
 
                 if (!options.isExport && stateData.activeLayer === 'storyBg') {
@@ -763,7 +769,7 @@
                 ctx.fillText(dateStr, textX, textY);
 
                 if (!options.isExport && stateData.activeLayer === 'dateLayer') {
-                    ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#52B788'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                    ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#A3C9A8'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
                     ctx.strokeRect(textX - baseFontSize * 5, textY - baseFontSize * 0.8, baseFontSize * 10, baseFontSize * 1.6);
                 }
                 ctx.restore();
@@ -789,7 +795,7 @@
                 ctx.fillText(textObj.text, textX, textY);
 
                 if (!options.isExport && stateData.activeLayer === 'textLayer') {
-                    ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#52B788'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                    ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#A3C9A8'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
                     ctx.strokeRect(textX - baseFontSize * 6, textY - baseFontSize * 0.8, baseFontSize * 12, baseFontSize * 1.6);
                 }
                 ctx.restore();
@@ -1059,7 +1065,7 @@
                         this.panel.classList.add('desktop-collapsed');
                     }
                 } else {
-                    this.panel.className = `lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#282421]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] flex flex-col drawer-transition shadow-2xl lg:shadow-none state-${this.mobileState}`;
+                    this.panel.className = `lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#2A3431]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3A4441] flex flex-col drawer-transition shadow-2xl lg:shadow-none state-${this.mobileState}`;
                     
                     if (this.mobileState === 'full') {
                         this.backdrop.classList.remove('opacity-0', 'pointer-events-none');
@@ -1119,8 +1125,8 @@
             setMode(mode) {
                 state.mode = mode;
                 document.querySelectorAll('.btn-mode').forEach(btn => {
-                    if (btn.dataset.mode === mode) btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] dark:bg-[#52B788] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5";
-                    else btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
+                    if (btn.dataset.mode === mode) btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5";
+                    else btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] text-[#4A3E3D] dark:text-[#EAE6E1] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
                 });
                 
                 this.rebuildRatioButtons();
@@ -1167,8 +1173,8 @@
                     const isActive = state.ratio === r.key;
                     btn.className = `btn-ratio flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all cream-button border ${
                         isActive 
-                            ? 'bg-[#8B7355] dark:bg-[#52B788] text-white border-[#8B7355] dark:border-[#52B788] font-bold shadow-md scale-[1.02]' 
-                            : 'bg-white dark:bg-[#282421] border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2] hover:border-[#8B7355]/40'
+                            ? 'bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] border-[#8B7355] dark:border-[#A3C9A8] font-bold shadow-md scale-[1.02]' 
+                            : 'bg-white dark:bg-[#1C2321] border-[#EFEAE2] dark:border-[#3A4441] text-[#4A3E3D] dark:text-[#EAE6E1] hover:border-[#8B7355]/40'
                     }`;
                     btn.innerHTML = `<span class="text-xs font-bold">${r.label}</span><span class="text-[9px] opacity-80 scale-90">${r.desc}</span>`;
                     btn.addEventListener('click', () => this.setRatio(r.key));
@@ -1185,8 +1191,8 @@
             setStoryLayout(layout) {
                 state.story.layout = layout;
                 document.querySelectorAll('.btn-story-layout').forEach(btn => {
-                    if (btn.dataset.layout === layout) btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] dark:bg-[#52B788] text-white font-bold shadow-sm";
-                    else btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-medium";
+                    if (btn.dataset.layout === layout) btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#8B7355] dark:bg-[#A3C9A8] text-white dark:text-[#1C2321] font-bold shadow-sm";
+                    else btn.className = "btn-story-layout py-1.5 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#212826] text-[#4A3E3D] dark:text-[#EAE6E1] font-medium";
                 });
                 this.rebuildStoryGridUploadCells(); Renderer.renderPreview();
             },
@@ -1197,7 +1203,7 @@
                 for (let i = 0; i < count; i++) {
                     const hasImg = !!state.story.gridImages[i];
                     const cell = document.createElement('div'); cell.className = "relative";
-                    cell.innerHTML = `<input type="file" id="upload-story-grid-${i}" accept="image/*" class="hidden"><label for="upload-story-grid-${i}" class="flex flex-col items-center justify-center h-14 border border-dashed border-[#CBBFB0] dark:border-[#524942] hover:border-[#8B7355] dark:hover:border-[#52B788] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#35302C] transition-all overflow-hidden relative">${hasImg ? `<img src="${state.story.gridImages[i].src}" class="absolute inset-0 w-full h-full object-cover">` : `<i data-lucide="plus" class="w-3.5 h-3.5 text-[#8B7355] dark:text-[#52B788]"></i><span class="text-[9px] font-medium mt-0.5">图 #${i+1}</span>`}</label>`;
+                    cell.innerHTML = `<input type="file" id="upload-story-grid-${i}" accept="image/*" class="hidden"><label for="upload-story-grid-${i}" class="flex flex-col items-center justify-center h-14 border border-dashed border-[#CBBFB0] dark:border-[#3A4441] hover:border-[#8B7355] dark:hover:border-[#A3C9A8] rounded-xl cursor-pointer bg-[#FAF6F0] dark:bg-[#212826] transition-all overflow-hidden relative">${hasImg ? `<img src="${state.story.gridImages[i].src}" class="absolute inset-0 w-full h-full object-cover">` : `<i data-lucide="plus" class="w-3.5 h-3.5 text-[#8B7355] dark:text-[#A3C9A8]"></i><span class="text-[9px] font-medium mt-0.5">图 #${i+1}</span>`}</label>`;
                     container.appendChild(cell);
                     document.getElementById(`upload-story-grid-${i}`).addEventListener('change', (e) => {
                         const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
@@ -1207,7 +1213,7 @@
                 lucide.createIcons();
             },
 
-            /* 核心：动态安全矩形算法，精确定位并解决 9:16 长画幅遮挡问题 */
+            /* 动态安全矩形避让算法 */
             adaptWorkspaceScale() {
                 const ws = document.getElementById('workspace');
                 const header = document.getElementById('main-header');
@@ -1226,19 +1232,23 @@
                 let availableH = window.innerHeight - headerRect.bottom - 24;
 
                 if (isPortrait) {
-                    // 竖屏：精准扣除当前底部抽屉顶部的实际 Y 轴位置，保留边距
-                    const drawerTopY = (panelRect && panelRect.top > 0) ? panelRect.top : window.innerHeight;
-                    const safeSpaceH = drawerTopY - headerRect.bottom - 24;
+                    // 竖屏：获取拖拽手柄/面板顶部的物理位置 Y
+                    const dragHandle = document.getElementById('drawer-drag-handle');
+                    const handleRect = dragHandle ? dragHandle.getBoundingClientRect() : null;
+                    const drawerTopY = (handleRect && handleRect.top > 0) ? handleRect.top : ((panelRect && panelRect.top > 0) ? panelRect.top : window.innerHeight);
+                    
+                    // 动态算得 Header 底部到抽屉顶部之间的净空间 height
+                    const safeSpaceH = drawerTopY - headerRect.bottom - 16;
                     availableH = Math.max(120, safeSpaceH);
                 } else {
-                    // 横屏/PC端：精准扣除右侧抽屉面板左侧的 X 轴位置
+                    // 横屏/PC端：获取面板左边界 X
                     if (panelRect && panelRect.left < window.innerWidth) {
                         availableW = Math.max(160, panelRect.left - 32);
                     }
                 }
 
-                // 绝不溢出安全边界的严格缩放比例
-                const scale = Math.min(availableW / tw, availableH / th, 1.3);
+                // 计算完全不溢出碰撞盒的比例 Scale
+                const scale = Math.min(availableW / tw, availableH / th, 1.25);
                 ws.style.width = `${tw * scale}px`; 
                 ws.style.height = `${th * scale}px`;
             },
