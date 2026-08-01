@@ -238,6 +238,12 @@
                             <option value="Month DD, YYYY">Month DD, YYYY (英文全称)</option>
                         </select>
                     </div>
+                    <!-- 日期字号微调滑动条 -->
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-[10px] text-zinc-400 font-medium shrink-0">字号大小</span>
+                        <input type="range" id="input-date-size" min="1.5" max="10" value="4.2" step="0.1" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <span id="date-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">4.2%</span>
+                    </div>
                 </div>
 
                 <!-- 2. 自由文字图层模块 -->
@@ -260,6 +266,12 @@
                             <option value="Noto Serif KR">韩·宋体</option>
                             <option value="Inter">现代无衬线</option>
                         </select>
+                    </div>
+                    <!-- 文字字号微调滑动条 -->
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-[10px] text-zinc-400 font-medium shrink-0">字号大小</span>
+                        <input type="range" id="input-text-size" min="4" max="30" value="12" step="0.5" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#52B788]">
+                        <span id="text-size-val" class="text-[10px] text-[#8B7355] dark:text-[#52B788] font-bold w-10 text-right">12%</span>
                     </div>
                 </div>
 
@@ -445,6 +457,7 @@
                 show: true,
                 raw: getSystemTodayStr(),
                 format: 'DD MMM YYYY',
+                fontSize: 4.2,
                 offset: { x: 50, y: 32 } 
             },
 
@@ -613,7 +626,7 @@
                 const dateStr = formatStoryDate(dateObj.raw, dateObj.format);
                 if (!dateStr) return;
 
-                const baseFontSize = width * 0.042;
+                const baseFontSize = width * (dateObj.fontSize / 100);
                 const textX = width * (dateObj.offset.x / 100);
                 const textY = height * (dateObj.offset.y / 100);
 
@@ -661,7 +674,6 @@
                 ctx.restore();
             },
 
-            // 100% 严格复原 v6.3 圆角路径绘制算法
             drawRoundedPath(ctx, x, y, width, height, radius) {
                 if (radius <= 0) { ctx.rect(x, y, width, height); return; }
                 ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
@@ -704,7 +716,11 @@
                 if (layer === 'dateLayer') title = "日期标注层";
                 else if (layer === 'textLayer') title = "自由文字层";
                 else if (layer === 'storyBg') title = "全屏背景图";
-                else if (layer.startsWith('storyCell_')) title = `宫格图 #${parseInt(layer.replace('storyCell_', '')) + 1}`;
+                else if (layer && layer.startsWith('storyCell_')) title = `宫格图 #${parseInt(layer.replace('storyCell_', '')) + 1}`;
+                else if (layer === 'inv_topFg') title = "镜像·上卡片前景图";
+                else if (layer === 'inv_bottomFg') title = "镜像·下卡片前景图";
+                else if (layer === 'inv_topBg') title = "镜像·上半背景图";
+                else if (layer === 'inv_bottomBg') title = "镜像·下半背景图";
                 document.getElementById('active-layer-indicator').textContent = title;
                 Renderer.renderPreview();
             },
@@ -742,15 +758,29 @@
                         }
                     }
                     return 'storyBg';
+                } else if (state.mode === 'inverse') {
+                    const midY = h / 2;
+                    const boxSize = w * (state.centerSize / 100);
+                    const topBoxX = w / 2 - boxSize / 2; const topBoxY = midY / 2 - boxSize / 2;
+                    const bottomBoxX = w / 2 - boxSize / 2; const bottomBoxY = midY + (midY / 2) - boxSize / 2;
+
+                    if (x >= topBoxX && x <= topBoxX + boxSize && y >= topBoxY && y <= topBoxY + boxSize) return 'inv_topFg';
+                    if (x >= bottomBoxX && x <= bottomBoxX + boxSize && y >= bottomBoxY && y <= bottomBoxY + boxSize) return 'inv_bottomFg';
+                    if (y < midY) return 'inv_topBg';
+                    return 'inv_bottomBg';
                 }
                 return 'storyBg';
             },
             getActiveLayerTarget() {
                 const layer = state.activeLayer;
-                if (layer === 'dateLayer') return { offset: state.dateLayer.offset, get scale() { return 1.0; }, set scale(v) {} };
-                if (layer === 'textLayer') return { offset: state.textLayer.offset, get scale() { return state.textLayer.fontSize / 12; }, set scale(v) { state.textLayer.fontSize = v * 12; } };
-                if (layer === 'storyBg') return { offset: state.story.bgOffset, get scale() { return state.story.bgScale; }, set scale(v) { state.story.bgScale = v; } };
+                if (layer === 'dateLayer') return { offset: state.dateLayer.offset, get scale() { return state.dateLayer.fontSize / 4.2; }, set scale(v) { state.dateLayer.fontSize = Math.max(1, v * 4.2); } };
+                if (layer === 'textLayer') return { offset: state.textLayer.offset, get scale() { return state.textLayer.fontSize / 12; }, set scale(v) { state.textLayer.fontSize = Math.max(2, v * 12); } };
+                if (layer === 'storyBg') return { offset: state.story.bgOffset, get scale() { return state.story.bgScale; }, set scale(v) { state.story.bgScale = Math.max(0.2, v); } };
                 if (layer && layer.startsWith('storyCell_')) return state.story.gridLayers[parseInt(layer.replace('storyCell_', ''))];
+                if (layer && layer.startsWith('inv_')) {
+                    const key = layer.replace('inv_', '');
+                    return state.inverse.layers[key];
+                }
                 return null;
             },
             bindGestures() {
@@ -778,8 +808,15 @@
 
                     if (e.touches && e.touches.length === 2) {
                         const dist = this.getTouchDistance(e.touches);
-                        if (this.startDistance > 0 && state.activeLayer === 'textLayer') {
-                            layerTarget.scale = Math.max(0.5, Math.min(5.0, this.initialScale * (dist / this.startDistance)));
+                        if (this.startDistance > 0) {
+                            layerTarget.scale = Math.max(0.2, Math.min(5.0, this.initialScale * (dist / this.startDistance)));
+                            if (state.activeLayer === 'textLayer') {
+                                document.getElementById('input-text-size').value = state.textLayer.fontSize;
+                                document.getElementById('text-size-val').textContent = state.textLayer.fontSize.toFixed(1) + '%';
+                            } else if (state.activeLayer === 'dateLayer') {
+                                document.getElementById('input-date-size').value = state.dateLayer.fontSize;
+                                document.getElementById('date-size-val').textContent = state.dateLayer.fontSize.toFixed(1) + '%';
+                            }
                         }
                         Renderer.renderPreview(); return;
                     }
@@ -805,8 +842,15 @@
                     const targetLayer = this.detectLayerFromCoords(e.clientX, e.clientY);
                     this.setActiveLayer(targetLayer);
                     const layerTarget = this.getActiveLayerTarget();
-                    if (layerTarget && state.activeLayer === 'textLayer') {
-                        layerTarget.scale = Math.max(0.5, Math.min(5.0, layerTarget.scale - e.deltaY * 0.0015));
+                    if (layerTarget) {
+                        layerTarget.scale = Math.max(0.2, Math.min(5.0, layerTarget.scale - e.deltaY * 0.0015));
+                        if (state.activeLayer === 'textLayer') {
+                            document.getElementById('input-text-size').value = state.textLayer.fontSize;
+                            document.getElementById('text-size-val').textContent = state.textLayer.fontSize.toFixed(1) + '%';
+                        } else if (state.activeLayer === 'dateLayer') {
+                            document.getElementById('input-date-size').value = state.dateLayer.fontSize;
+                            document.getElementById('date-size-val').textContent = state.dateLayer.fontSize.toFixed(1) + '%';
+                        }
                         Renderer.renderPreview();
                     }
                 };
@@ -867,12 +911,24 @@
                     document.getElementById('panel-inverse-controls').classList.remove('hidden');
                     document.getElementById('panel-story-controls').classList.add('hidden');
                     document.getElementById('row-grid-gap').classList.add('hidden');
+                    
+                    // 镜像模式初始占比设置为 30%
+                    state.centerSize = 30;
+                    document.getElementById('input-center-size').value = 30;
+                    document.getElementById('center-size-val').textContent = '30%';
+
                     this.setRatio('1-1'); 
                     GestureManager.setActiveLayer('textLayer');
                 } else {
                     document.getElementById('panel-inverse-controls').classList.add('hidden');
                     document.getElementById('panel-story-controls').classList.remove('hidden');
                     document.getElementById('row-grid-gap').classList.remove('hidden');
+                    
+                    // Story 模式恢复 55%
+                    state.centerSize = 55;
+                    document.getElementById('input-center-size').value = 55;
+                    document.getElementById('center-size-val').textContent = '55%';
+
                     this.setRatio('9-16'); 
                     this.rebuildStoryGridUploadCells();
                     GestureManager.setActiveLayer('storyBg');
@@ -1048,12 +1104,14 @@
                 document.getElementById('chk-show-date').addEventListener('change', (e) => { state.dateLayer.show = e.target.checked; Renderer.renderPreview(); });
                 document.getElementById('input-date-val').addEventListener('change', (e) => { state.dateLayer.raw = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-date-format').addEventListener('change', (e) => { state.dateLayer.format = e.target.value; Renderer.renderPreview(); });
+                document.getElementById('input-date-size').addEventListener('input', (e) => { state.dateLayer.fontSize = parseFloat(e.target.value); document.getElementById('date-size-val').textContent = state.dateLayer.fontSize.toFixed(1) + '%'; Renderer.renderPreview(); });
 
                 document.getElementById('chk-show-text').addEventListener('change', (e) => { state.textLayer.show = e.target.checked; Renderer.renderPreview(); });
                 document.getElementById('input-free-text').addEventListener('input', (e) => { state.textLayer.text = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-font-family').addEventListener('change', (e) => { state.textLayer.fontFamily = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-text-color').addEventListener('input', (e) => { state.textLayer.color = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-text-shadow').addEventListener('input', (e) => { state.textLayer.shadowBlur = parseInt(e.target.value); Renderer.renderPreview(); });
+                document.getElementById('input-text-size').addEventListener('input', (e) => { state.textLayer.fontSize = parseFloat(e.target.value); document.getElementById('text-size-val').textContent = state.textLayer.fontSize.toFixed(1) + '%'; Renderer.renderPreview(); });
                 
                 // 5 大位置预设
                 document.getElementById('btn-text-pos-top').addEventListener('click', () => { 
@@ -1088,7 +1146,7 @@
                 document.querySelectorAll('.btn-preset-color').forEach(btn => btn.addEventListener('click', () => { state.borderColor = btn.dataset.color; document.getElementById('input-border-color').value = state.borderColor; Renderer.renderPreview(); }));
                 document.getElementById('input-border-color').addEventListener('input', (e) => { state.borderColor = e.target.value; Renderer.renderPreview(); });
                 document.getElementById('input-radius').addEventListener('input', (e) => { state.radius = parseInt(e.target.value); document.getElementById('radius-val').textContent = state.radius + 'px'; Renderer.renderPreview(); });
-                document.getElementById('input-grain').addEventListener('input', (e) => { state.grainOpacity = parseInt(e.target.value) / 100; document.getElementById('grain-val').textContent = state.grainOpacity * 100 + '%'; Renderer.renderPreview(); });
+                document.getElementById('input-grain').addEventListener('input', (e) => { state.grainOpacity = parseInt(e.target.value) / 100; document.getElementById('grain-val').textContent = parseInt(e.target.value) + '%'; Renderer.renderPreview(); });
                 
                 document.getElementById('btn-download').addEventListener('click', () => ExportEngine.generate());
                 document.getElementById('btn-close-modal').addEventListener('click', () => document.getElementById('mobile-download-modal').classList.add('opacity-0', 'pointer-events-none'));
