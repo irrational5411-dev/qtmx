@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V7.0 抽屉式响应式美学排版生成器</title>
+    <title>Riyad Studio V7.1 美学排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -36,8 +36,8 @@
             transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, width 0.35s ease;
         }
 
-        /* 移动端竖屏底部抽屉吸附位置控制 */
-        @media (max-width: 1023px) and (orientation: portrait) {
+        /* 1. 竖屏模式 (Portrait View - 包含手机和平板竖屏)：严格仅在 portrait 时触发底部抽屉 */
+        @media (orientation: portrait) {
             #drawer-panel {
                 position: fixed;
                 left: 0;
@@ -52,21 +52,23 @@
                 transform: translateY(calc(100% - 56px));
             }
             #drawer-panel.state-half {
-                transform: translateY(52%);
+                transform: translateY(50%);
             }
             #drawer-panel.state-full {
                 transform: translateY(0%);
             }
 
-            /* 移动端竖屏预览区上移，留出底部抽屉空间 */
-            #stage-viewport {
-                align-items: flex-start;
-                padding-top: 4.25rem;
+            #drawer-drag-handle {
+                display: flex !important;
+            }
+
+            #btn-side-drawer-tab {
+                display: none !important;
             }
         }
 
-        /* 移动端横屏右侧抽屉 */
-        @media (max-width: 1023px) and (orientation: landscape) {
+        /* 2. 横屏模式 (Landscape View - 包含手机横屏、iPad横屏及移动设备)：右侧侧滑抽屉 */
+        @media (orientation: landscape) and (max-width: 1023px) {
             #drawer-panel {
                 position: fixed;
                 top: 0;
@@ -83,10 +85,24 @@
             #drawer-panel.state-full, #drawer-panel.state-half {
                 transform: translateX(0%);
             }
+
+            #drawer-drag-handle {
+                display: none !important;
+            }
+
+            #btn-side-drawer-tab {
+                display: flex !important;
+            }
         }
 
-        /* PC端侧边栏折叠与展开 */
+        /* 3. PC桌面端大屏 (Desktop View) */
         @media (min-width: 1024px) {
+            #drawer-drag-handle {
+                display: none !important;
+            }
+            #btn-side-drawer-tab {
+                display: none !important;
+            }
             #drawer-panel.desktop-collapsed {
                 transform: translateX(100%);
                 opacity: 0;
@@ -106,12 +122,12 @@
     </div>
 
     <!-- 顶栏顶部通用浮动控制工具条 -->
-    <header class="absolute top-0 left-0 right-0 h-14 px-4 flex items-center justify-between z-40 pointer-events-none">
+    <header id="main-header" class="absolute top-0 left-0 right-0 h-14 px-4 flex items-center justify-between z-40 pointer-events-none">
         <div class="flex items-center gap-2 pointer-events-auto bg-white/70 dark:bg-[#282421]/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#EFEAE2] dark:border-[#3E3834] shadow-sm">
             <span class="p-1 bg-[#8B7355] dark:bg-[#52B788] rounded-lg text-white">
                 <i data-lucide="camera" class="w-3.5 h-3.5"></i>
             </span>
-            <span class="text-xs font-bold tracking-wider">RIYAD V7.0</span>
+            <span class="text-xs font-bold tracking-wider">RIYAD V7.1</span>
         </div>
         
         <div class="flex items-center gap-2 pointer-events-auto">
@@ -130,7 +146,7 @@
         </div>
     </header>
 
-    <!-- 主画幅预览舞台 (适度上移避开底部抽屉遮挡) -->
+    <!-- 主画幅预览舞台 -->
     <main id="stage-viewport" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
             <div class="absolute w-[250px] h-[250px] rounded-full bg-[#E8DCC4] dark:bg-[#2D4A3E] blur-[80px] top-1/4 left-1/3 animate-pulse"></div>
@@ -150,25 +166,25 @@
         </div>
     </main>
 
-    <!-- 浮动遮罩（移动端全开抽屉时点击可收起） -->
+    <!-- 浮动遮罩（全开抽屉时点击可收起） -->
     <div id="drawer-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
 
     <!-- 抽屉编辑面板区域 -->
     <aside id="drawer-panel" class="state-half lg:relative lg:w-[420px] lg:h-full shrink-0 bg-white/95 dark:bg-[#282421]/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-[#EFEAE2] dark:border-[#3E3834] flex flex-col drawer-transition shadow-2xl lg:shadow-none">
         
-        <!-- 移动端横屏专享：抽屉边缘左侧悬浮显隐 Tab 按钮 -->
-        <button id="btn-side-drawer-tab" class="lg:hidden absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-16 bg-[#8B7355] dark:bg-[#52B788] text-white rounded-l-2xl shadow-lg flex flex-col items-center justify-center gap-1 z-50 cream-button" title="侧栏控制条">
+        <!-- 横屏专享：抽屉边缘左侧悬浮显隐 Tab 按钮 -->
+        <button id="btn-side-drawer-tab" class="absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-16 bg-[#8B7355] dark:bg-[#52B788] text-white rounded-l-2xl shadow-lg flex-col items-center justify-center gap-1 z-50 cream-button" title="侧栏控制条">
             <i data-lucide="sliders" class="w-4 h-4"></i>
             <span class="text-[9px] font-bold writing-mode-vertical">面板</span>
         </button>
 
-        <!-- 移动端竖屏专享：顶部拖拽抓手条 (Drag Handle Bar) -->
-        <div id="drawer-drag-handle" class="lg:hidden w-full pt-3 pb-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing border-b border-[#EFEAE2]/50 dark:border-[#3E3834]/50 shrink-0 select-none">
+        <!-- 竖屏专享：顶部拖拽抓手条 (Drag Handle Bar) -->
+        <div id="drawer-drag-handle" class="w-full pt-3 pb-2 flex-col items-center justify-center cursor-grab active:cursor-grabbing border-b border-[#EFEAE2]/50 dark:border-[#3E3834]/50 shrink-0 select-none">
             <div class="w-10 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mb-1"></div>
             <span class="text-[10px] text-zinc-400 font-medium">拖拽或点击切换编辑面板</span>
         </div>
 
-        <!-- 面板头部标题与控制按钮 (PC端/展开端显示) -->
+        <!-- 面板头部标题与控制按钮 (PC端/大屏显示) -->
         <div class="hidden lg:flex items-center justify-between px-5 py-4 border-b border-[#EFEAE2] dark:border-[#3E3834] shrink-0">
             <div class="flex items-center gap-2">
                 <i data-lucide="sliders" class="w-4 h-4 text-[#8B7355] dark:text-[#52B788]"></i>
@@ -453,7 +469,7 @@
                     <line x1="106" y1="36" x2="104" y2="39" stroke-width="1.5" stroke-linecap="round" />
                     <line x1="20" y1="57" x2="180" y2="57" stroke-width="1" stroke-linecap="round" />
                 </svg>
-                <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V7.0</span>
+                <span class="text-[10px] text-[#8B7355]/60 dark:text-[#52B788]/60 tracking-wider">Aesthetic Poster Engine V7.1</span>
             </div>
 
         </div>
@@ -1002,7 +1018,7 @@
             }
         };
 
-        /* 抽屉管理器：精细化处理移动端竖屏居中与移动端横屏左侧挂件按钮 */
+        /* 抽屉管理器：响应式区分设备与防遮挡渲染 */
         const DrawerManager = {
             panel: null, backdrop: null,
             mobileState: 'half', // 'collapsed' | 'half' | 'full'
@@ -1065,7 +1081,7 @@
                 document.getElementById('btn-close-pc-drawer').addEventListener('click', () => this.close());
                 this.backdrop.addEventListener('click', () => this.close());
 
-                // 移动端拖拽抓手支持
+                // 竖屏手势抓手
                 const handle = document.getElementById('drawer-drag-handle');
                 let startY = 0; let initialPos = 'half';
                 handle.addEventListener('click', () => this.toggle());
@@ -1078,17 +1094,17 @@
                 handle.addEventListener('touchend', (e) => {
                     const endY = e.changedTouches[0].clientY;
                     const diffY = endY - startY;
-                    if (diffY < -40) { // 向上滑
+                    if (diffY < -40) {
                         if (initialPos === 'collapsed') this.mobileState = 'half';
                         else if (initialPos === 'half') this.mobileState = 'full';
-                    } else if (diffY > 40) { // 向下滑
+                    } else if (diffY > 40) {
                         if (initialPos === 'full') this.mobileState = 'half';
                         else if (initialPos === 'half') this.mobileState = 'collapsed';
                     }
                     this.updateDrawerState();
                 }, { passive: true });
 
-                // PC端 Tab / H 快捷键显隐抽屉
+                // PC端 Tab / H 快捷键
                 window.addEventListener('keydown', (e) => {
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
                     if (e.key === 'Tab' || e.key === 'h' || e.key === 'H') {
@@ -1191,29 +1207,37 @@
                 lucide.createIcons();
             },
 
+            /* 核心：动态安全矩形算法，精确定位并解决 9:16 长画幅遮挡问题 */
             adaptWorkspaceScale() {
                 const ws = document.getElementById('workspace');
-                const viewport = document.getElementById('stage-viewport');
+                const header = document.getElementById('main-header');
+                const panel = document.getElementById('drawer-panel');
+
                 let tw = 320, th = 568; 
                 if (state.ratio === '1-1') { tw = 400; th = 400; } 
                 else if (state.ratio === '3-4') { tw = 360; th = 480; }
 
-                // 计算可用宽高（在移动端竖屏半开抽屉时，扣除下方抽屉占用的空间，防止遮挡画幅）
-                let availableW = viewport.clientWidth - 32;
-                let availableH = viewport.clientHeight - 80;
+                const headerRect = header ? header.getBoundingClientRect() : { bottom: 56 };
+                const panelRect = panel ? panel.getBoundingClientRect() : { top: window.innerHeight, left: window.innerWidth };
 
-                const isPortraitMobile = window.innerWidth < 1024 && window.innerHeight > window.innerWidth;
-                if (isPortraitMobile) {
-                    // 移动竖屏模式：半开状态留出 45% 的底部空间，全开留出少量空间，折叠扣除 56px
-                    if (DrawerManager.mobileState === 'half') {
-                        availableH = viewport.clientHeight * 0.52 - 60;
-                    } else if (DrawerManager.mobileState === 'full') {
-                        availableH = viewport.clientHeight * 0.25;
-                    } else {
-                        availableH = viewport.clientHeight - 80;
+                const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+
+                let availableW = window.innerWidth - 32;
+                let availableH = window.innerHeight - headerRect.bottom - 24;
+
+                if (isPortrait) {
+                    // 竖屏：精准扣除当前底部抽屉顶部的实际 Y 轴位置，保留边距
+                    const drawerTopY = (panelRect && panelRect.top > 0) ? panelRect.top : window.innerHeight;
+                    const safeSpaceH = drawerTopY - headerRect.bottom - 24;
+                    availableH = Math.max(120, safeSpaceH);
+                } else {
+                    // 横屏/PC端：精准扣除右侧抽屉面板左侧的 X 轴位置
+                    if (panelRect && panelRect.left < window.innerWidth) {
+                        availableW = Math.max(160, panelRect.left - 32);
                     }
                 }
 
+                // 绝不溢出安全边界的严格缩放比例
                 const scale = Math.min(availableW / tw, availableH / th, 1.3);
                 ws.style.width = `${tw * scale}px`; 
                 ws.style.height = `${th * scale}px`;
