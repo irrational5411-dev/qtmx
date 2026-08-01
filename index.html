@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V8.1 专业排版生成器</title>
+    <title>Riyad Studio V8.4 专业排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -39,7 +39,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* V8.1 抽屉式交互架构 */
+        /* V8.4 完美的上下流式架构 */
         #app {
             height: 100vh;
             display: flex;
@@ -50,13 +50,15 @@
         
         #preview-panel {
             flex: 1;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 0;
             position: relative;
             background: linear-gradient(180deg, rgba(139,115,85,0.03) 0%, rgba(139,115,85,0.08) 100%);
             padding-bottom: 72px;
+            overflow: hidden;
         }
         .dark #preview-panel {
             background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
@@ -68,7 +70,8 @@
             bottom: 64px;
             left: 0;
             width: 100%;
-            height: 44vh;
+            height: 42vh;
+            min-height: 50px;
             max-height: 85vh;
             background-color: #FFFFFF;
             border-radius: 32px 32px 0 0;
@@ -76,7 +79,7 @@
             display: flex;
             flex-direction: column;
             z-index: 35;
-            transition: height 0.08s ease-out;
+            transition: height 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .dark #editor-panel {
             background-color: #282421;
@@ -92,6 +95,7 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
+            flex-shrink: 0;
         }
         #editor-handle {
             width: 44px;
@@ -103,7 +107,7 @@
             background: #524942;
         }
 
-        /* 底部固定 Tab 导航栏 (完全复刻参考图) */
+        /* 底部固定 Tab 导航栏 */
         #bottom-nav-bar {
             position: absolute;
             bottom: 0;
@@ -161,6 +165,7 @@
                 height: 100vh;
                 border-radius: 0;
                 box-shadow: none;
+                min-height: auto;
             }
             #bottom-nav-bar, #editor-handle-bar {
                 display: none !important;
@@ -188,9 +193,17 @@
                 <span class="p-1.5 bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] rounded-lg text-white">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                 </span>
-                <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v8.1</span>
+                <span class="text-sm font-bold tracking-wider">RIYAD STUDIO v8.4</span>
             </div>
-            <div class="flex items-center gap-2">
+            
+            <div class="flex items-center gap-1.5">
+                <button id="btn-undo" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] cream-button disabled:opacity-30" title="撤销 (Undo)" disabled>
+                    <i data-lucide="undo-2" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-redo" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] cream-button disabled:opacity-30" title="重做 (Redo)" disabled>
+                    <i data-lucide="redo-2" class="w-4 h-4"></i>
+                </button>
+                <div class="w-[1px] h-4 bg-zinc-300 dark:bg-zinc-700 mx-1"></div>
                 <button id="btn-theme-toggle" class="p-2 rounded-full bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#70FFFF] cream-button" title="切换深色/浅色模式">
                     <i data-lucide="sun" class="w-4 h-4 dark:hidden"></i>
                     <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
@@ -219,24 +232,21 @@
             </div>
         </section>
 
-        <!-- 2. 抽屉式参数编辑面板 (对应参考图的抽屉架构) -->
+        <!-- 2. 抽屉式参数编辑面板 -->
         <section id="editor-panel">
-            <!-- 顶部抽屉拉伸条 (参考图中的箭头/杠杠) -->
             <div id="editor-handle-bar">
                 <div id="editor-handle"></div>
-                <div class="w-3 h-3 text-zinc-400 -mt-1"><i data-lucide="chevron-up" class="w-3 h-3"></i></div>
+                <div class="w-3 h-3 text-zinc-400 -mt-1"><i data-lucide="chevron-up" class="w-3 h-3" id="handle-icon"></i></div>
             </div>
 
-            <!-- 面板内部滚动容器 -->
             <div class="flex-1 overflow-y-auto px-5 pb-24 flex flex-col gap-4 no-scrollbar">
 
-                <!-- Tab 1: 照片 (对应参考图：照片) -->
+                <!-- Tab 1: 照片 -->
                 <div class="tab-content flex flex-col gap-3" data-tab-id="photo">
                     <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> 照片素材与背景上传
                     </span>
 
-                    <!-- 镜像互换模式上传组 -->
                     <div id="panel-inverse-controls" class="flex flex-col gap-3 hidden">
                         <div class="grid grid-cols-2 gap-2.5">
                             <div class="relative">
@@ -266,7 +276,6 @@
                         </div>
                     </div>
 
-                    <!-- Ins Story 拼图模式上传组 -->
                     <div id="panel-story-controls" class="flex flex-col gap-3">
                         <div class="flex flex-col gap-1.5">
                             <div class="relative">
@@ -301,7 +310,7 @@
                     </div>
                 </div>
 
-                <!-- Tab 2: 样式 (对应参考图：样式，包含比例、模式、微调) -->
+                <!-- Tab 2: 样式 (修复核心排版模式按钮选中态逻辑) -->
                 <div class="tab-content flex flex-col gap-3 hidden" data-tab-id="style">
                     <div class="flex flex-col gap-2">
                         <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
@@ -333,14 +342,14 @@
                                 <span>中央图片区域占比 (Size)</span>
                                 <span id="center-size-val" class="text-[#8B7355] dark:text-[#70FFFF] font-bold">55%</span>
                             </div>
-                            <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                            <input type="range" id="input-center-size" min="20" max="85" value="55" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                             
                             <div id="row-grid-gap" class="border-t border-[#EFEAE2] dark:border-[#433B35] pt-2 flex flex-col gap-1.5">
                                 <div class="flex justify-between text-[11px] font-medium">
                                     <span>图片缝隙间距 (Gap)</span>
                                     <span id="grid-gap-val" class="text-[#8B7355] dark:text-[#70FFFF] font-bold">2px</span>
                                 </div>
-                                <input type="range" id="input-grid-gap" min="0" max="20" value="2" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                                <input type="range" id="input-grid-gap" min="0" max="20" value="2" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                             </div>
 
                             <div class="border-t border-[#EFEAE2] dark:border-[#433B35] pt-2 flex flex-col gap-1.5">
@@ -348,30 +357,31 @@
                                     <span>边框厚度 (Border)</span>
                                     <span id="border-width-val" class="text-[#8B7355] dark:text-[#70FFFF] font-bold">0px</span>
                                 </div>
-                                <input type="range" id="input-border-width" min="0" max="16" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                                <input type="range" id="input-border-width" min="0" max="16" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
+                            <!-- 修复卡片圆角无法调整 Bug (绑定 input 事件) -->
                             <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col justify-between">
                                 <div class="flex justify-between text-[11px] mb-1 font-semibold">
                                     <span>卡片圆角 (Corner)</span>
                                     <span id="radius-val" class="text-[#8B7355] dark:text-[#70FFFF]">0px</span>
                                 </div>
-                                <input type="range" id="input-radius" min="0" max="24" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                                <input type="range" id="input-radius" min="0" max="24" value="0" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                             </div>
                             <div class="bg-[#FAF6F0] dark:bg-[#35302C] p-2.5 rounded-2xl border border-[#EFEAE2] dark:border-[#433B35] flex flex-col justify-between">
                                 <div class="flex justify-between text-[11px] mb-1 font-semibold">
                                     <span>噪点 (Grain)</span>
                                     <span id="grain-val" class="text-[#8B7355] dark:text-[#70FFFF]">6%</span>
                                 </div>
-                                <input type="range" id="input-grain" min="0" max="15" value="6" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                                <input type="range" id="input-grain" min="0" max="15" value="6" class="w-full h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 3: 文字 (对应参考图：文字) -->
+                <!-- Tab 3: 文字 (修复浅色模式开关按钮颜色为焦糖棕 #8B7355) -->
                 <div class="tab-content flex flex-col gap-3 hidden" data-tab-id="text">
                     <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="type" class="w-3.5 h-3.5"></i> 独立文本排版设计
@@ -383,13 +393,13 @@
                                 <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#70FFFF]">① 日期标注层</label>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="chk-show-date" checked class="sr-only peer">
-                                    <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#70FFFF]"></div>
+                                    <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#8B7355] dark:peer-checked:bg-[#70FFFF]"></div>
                                     <span class="ml-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">显示</span>
                                 </label>
                             </div>
                             <div class="flex gap-2">
-                                <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
-                                <select id="input-date-format" class="w-36 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
+                                <input type="date" id="input-date-val" class="flex-1 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#8B7355] dark:focus:border-[#70FFFF]">
+                                <select id="input-date-format" class="w-36 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#8B7355] dark:focus:border-[#70FFFF]">
                                     <option value="DD MMM YYYY">DD MMM YYYY</option>
                                     <option value="YYYY.MM.DD">YYYY.MM.DD</option>
                                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -403,13 +413,13 @@
                                 <label class="text-[10px] font-bold text-[#8B7355] dark:text-[#70FFFF]">② 自由文字层</label>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="chk-show-text" checked class="sr-only peer">
-                                    <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#70FFFF]"></div>
+                                    <div class="w-7 h-4 bg-zinc-300 dark:bg-zinc-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#8B7355] dark:peer-checked:bg-[#70FFFF]"></div>
                                     <span class="ml-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">显示</span>
                                 </label>
                             </div>
                             <div class="flex gap-2">
-                                <input type="text" id="input-free-text" value="SHANGHAI // SEA & SUN" placeholder="输入文字..." class="w-3/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
-                                <select id="input-font-family" class="w-2/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-1 py-1.5 text-xs focus:outline-none focus:border-[#70FFFF]">
+                                <input type="text" id="input-free-text" value="SHANGHAI // SEA & SUN" placeholder="输入文字..." class="w-3/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#8B7355] dark:focus:border-[#70FFFF]">
+                                <select id="input-font-family" class="w-2/5 bg-white dark:bg-[#282421] border border-[#EFEAE2] dark:border-[#433B35] rounded-lg px-1 py-1.5 text-xs focus:outline-none focus:border-[#8B7355] dark:focus:border-[#70FFFF]">
                                     <option value="Cinzel">英·衬线</option>
                                     <option value="Caveat">英·手写</option>
                                     <option value="Noto Serif SC">中·思源宋</option>
@@ -438,14 +448,14 @@
                                 </div>
                                 <div class="flex-1 flex items-center gap-2">
                                     <span class="text-[10px] text-zinc-400">阴影</span>
-                                    <input type="range" id="input-text-shadow" min="0" max="20" value="6" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#70FFFF]">
+                                    <input type="range" id="input-text-shadow" min="0" max="20" value="6" class="flex-1 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-[#8B7355] dark:accent-[#70FFFF]">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 4: 分享 (对应参考图：分享与导出) -->
+                <!-- Tab 4: 分享 -->
                 <div class="tab-content flex flex-col gap-4 hidden" data-tab-id="share">
                     <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#70FFFF] uppercase tracking-wider flex items-center gap-1">
                         <i data-lucide="share-2" class="w-3.5 h-3.5"></i> 保存与分享原图
@@ -464,7 +474,7 @@
             </div>
         </section>
 
-        <!-- 3. 底部固定 Tab 导航栏 (完美对应参考图3) -->
+        <!-- 3. 底部固定 Tab 导航栏 -->
         <nav id="bottom-nav-bar">
             <button class="tab-btn" data-tab="photo">
                 <i data-lucide="image" class="w-5 h-5"></i>
@@ -584,6 +594,52 @@
                     { offset: { x: 50, y: 50 }, scale: 1.0 }, { offset: { x: 50, y: 50 }, scale: 1.0 },
                     { offset: { x: 50, y: 50 }, scale: 1.0 }, { offset: { x: 50, y: 50 }, scale: 1.0 }
                 ]
+            }
+        };
+
+        const HistoryManager = {
+            stack: [],
+            pointer: -1,
+            maxSize: 20,
+            push() {
+                if (this.pointer < this.stack.length - 1) {
+                    this.stack = this.stack.slice(0, this.pointer + 1);
+                }
+                const snapshot = JSON.stringify(state, (key, val) => {
+                    if (key === 'bgImage' || key === 'imageA' || key === 'imageB' || key === 'gridImages') return undefined;
+                    return val;
+                });
+                this.stack.push(snapshot);
+                if (this.stack.length > this.maxSize) {
+                    this.stack.shift();
+                } else {
+                    this.pointer++;
+                }
+                this.updateButtons();
+            },
+            undo() {
+                if (this.pointer > 0) {
+                    this.pointer--;
+                    this.restore();
+                }
+            },
+            redo() {
+                if (this.pointer < this.stack.length - 1) {
+                    this.pointer++;
+                    this.restore();
+                }
+            },
+            restore() {
+                const snapshot = JSON.parse(this.stack[this.pointer]);
+                Object.assign(state, snapshot);
+                Renderer.renderPreview();
+                this.updateButtons();
+            },
+            updateButtons() {
+                const btnUndo = document.getElementById('btn-undo');
+                const btnRedo = document.getElementById('btn-redo');
+                if (btnUndo) btnUndo.disabled = (this.pointer <= 0);
+                if (btnRedo) btnRedo.disabled = (this.pointer >= this.stack.length - 1);
             }
         };
 
@@ -902,7 +958,7 @@
                     layerTarget.offset.y = Math.max(0, Math.min(100, this.initialOffset.y - chgY));
                     Renderer.renderPreview();
                 };
-                const onEnd = () => { if (this.isDragging) { this.isDragging = false; Renderer.renderPreview(); } };
+                const onEnd = () => { if (this.isDragging) { this.isDragging = false; Renderer.renderPreview(); HistoryManager.push(); } };
                 const onWheel = (e) => {
                     e.preventDefault();
                     const targetLayer = this.detectLayerFromCoords(e.clientX, e.clientY);
@@ -911,6 +967,7 @@
                     if (layerTarget && state.activeLayer === 'textLayer') {
                         layerTarget.scale = Math.max(0.5, Math.min(3.0, layerTarget.scale - e.deltaY * 0.0015));
                         Renderer.renderPreview();
+                        HistoryManager.push();
                     }
                 };
 
@@ -966,6 +1023,15 @@
             setMode(mode) {
                 state.mode = mode;
                 
+                // 【核心修复 1】：正确同步排版模式按钮的选中高亮状态
+                document.querySelectorAll('.btn-mode').forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white font-bold transition-all cream-button shadow-sm flex items-center justify-center gap-1.5";
+                    } else {
+                        btn.className = "btn-mode py-2 px-2 text-xs rounded-xl bg-[#FAF6F0] dark:bg-[#35302C] text-[#4A3E3D] dark:text-[#EFEAE2] font-bold transition-all cream-button flex items-center justify-center gap-1.5";
+                    }
+                });
+
                 this.rebuildRatioCards();
 
                 if (mode === 'inverse') {
@@ -984,6 +1050,7 @@
                     GestureManager.setActiveLayer('textLayer');
                 }
                 Renderer.renderPreview();
+                HistoryManager.push();
             },
 
             rebuildRatioCards() {
@@ -1002,7 +1069,10 @@
                     const isSelected = state.ratio === r;
                     btn.className = `p-2 rounded-xl border text-center transition-all cream-button flex flex-col items-center justify-center gap-0.5 ${isSelected ? 'bg-[#8B7355] dark:bg-[#70FFFF] dark:text-[#1E1B18] text-white border-transparent font-bold shadow-sm' : 'bg-white dark:bg-[#282421] border-[#EFEAE2] dark:border-[#433B35] text-[#4A3E3D] dark:text-[#EFEAE2]'}`;
                     btn.innerHTML = `<span class="text-xs font-bold">${meta.name}</span><span class="text-[9px] opacity-75">${meta.desc}</span>`;
-                    btn.addEventListener('click', () => this.setRatio(r));
+                    btn.addEventListener('click', () => {
+                        this.setRatio(r);
+                        HistoryManager.push();
+                    });
                     group.appendChild(btn);
                 });
             },
@@ -1035,6 +1105,7 @@
 
                 this.rebuildStoryGridUploadCells(); 
                 Renderer.renderPreview();
+                HistoryManager.push();
             },
 
             rebuildStoryGridUploadCells() {
@@ -1047,19 +1118,26 @@
                     container.appendChild(cell);
                     document.getElementById(`upload-story-grid-${i}`).addEventListener('change', (e) => {
                         const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[i] = img; this.rebuildStoryGridUploadCells(); GestureManager.setActiveLayer(`storyCell_${i}`); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[i] = img; this.rebuildStoryGridUploadCells(); GestureManager.setActiveLayer(`storyCell_${i}`); Renderer.renderPreview(); HistoryManager.push(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                     });
                 }
                 lucide.createIcons();
             },
 
+            // 【核心修复】：完美的自适应缩放计算，彻底解决画板缩在左上角与撑满视口问题
             adaptWorkspaceScale() {
                 const ws = document.getElementById('workspace'); 
                 const container = ws.parentElement;
                 let tw = 320, th = 568; 
                 if (state.ratio === '1-1') { tw = 400; th = 400; } 
                 else if (state.ratio === '3-4') { tw = 360; th = 480; }
-                const scale = Math.min((container.clientWidth - 24) / tw, (container.clientHeight - 24) / th, 1.05);
+                
+                const containerW = container.clientWidth - 20;
+                const containerH = container.clientHeight - 20;
+                const scaleX = containerW / tw;
+                const scaleY = containerH / th;
+                const scale = Math.min(scaleX, scaleY, 1.0);
+
                 ws.style.width = `${tw * scale}px`; 
                 ws.style.height = `${th * scale}px`;
             },
@@ -1105,6 +1183,7 @@
                     const bgImg = new Image(); bgImg.crossOrigin = "anonymous"; bgImg.onload = () => { state.story.bgImage = bgImg; document.getElementById('story-bg-status').textContent = "已就绪"; check(); }; bgImg.src = sampleBg;
                     samples.forEach((src, i) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => { state.story.gridImages[i] = img; check(); }; img.src = src; });
                 }
+                HistoryManager.push();
             }
         };
 
@@ -1121,24 +1200,33 @@
                 };
                 document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 
+                document.getElementById('btn-undo').addEventListener('click', () => HistoryManager.undo());
+                document.getElementById('btn-redo').addEventListener('click', () => HistoryManager.redo());
+
                 if (localStorage.getItem('riyad_theme') === 'dark' || (!localStorage.getItem('riyad_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark');
                 }
 
-                // 完美复刻参考图的 Bottom Sheet 底部 Tab 联动逻辑
                 const tabButtons = document.querySelectorAll('.tab-btn');
                 const tabContents = document.querySelectorAll('.tab-content');
+                const editorPanel = document.getElementById('editor-panel');
                 
-                // 默认初始化显示第二个 tab (样式)
                 tabContents.forEach((el) => {
                     if (el.dataset.tabId !== 'style') el.classList.add('hidden');
                 });
 
                 tabButtons.forEach(btn => {
                     btn.addEventListener('click', () => {
+                        const targetId = btn.dataset.tab;
+                        
+                        if (editorPanel.offsetHeight < 100) {
+                            editorPanel.style.height = '42vh';
+                            document.getElementById('handle-icon').style.transform = 'rotate(0deg)';
+                        }
+
                         tabButtons.forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        const targetId = btn.dataset.tab;
+
                         tabContents.forEach(content => {
                             if (content.dataset.tabId === targetId) {
                                 content.classList.remove('hidden');
@@ -1153,73 +1241,62 @@
                 
                 ['upload-a', 'upload-b'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
                     const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                    reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.inverse[id==='upload-a'?'imageA':'imageB'] = img; document.getElementById(id==='upload-a'?'img-thumb-a':'img-thumb-b').src = ev.target.result; document.getElementById(id==='upload-a'?'preview-container-a':'preview-container-b').classList.remove('hidden'); document.getElementById(id==='upload-a'?'placeholder-a':'placeholder-b').classList.add('hidden'); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                    reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.inverse[id==='upload-a'?'imageA':'imageB'] = img; document.getElementById(id==='upload-a'?'img-thumb-a':'img-thumb-b').src = ev.target.result; document.getElementById(id==='upload-a'?'preview-container-a':'preview-container-b').classList.remove('hidden'); document.getElementById(id==='upload-a'?'placeholder-a':'placeholder-b').classList.add('hidden'); Renderer.renderPreview(); HistoryManager.push(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                 }));
 
                 document.getElementById('upload-story-bg').addEventListener('change', (e) => {
                     const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                    reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.bgImage = img; document.getElementById('story-bg-status').textContent = "已就绪"; GestureManager.setActiveLayer('storyBg'); Renderer.renderPreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                    reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.bgImage = img; document.getElementById('story-bg-status').textContent = "已就绪"; GestureManager.setActiveLayer('storyBg'); Renderer.renderPreview(); HistoryManager.push(); }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                 });
 
                 document.getElementById('upload-story-grid-multi').addEventListener('change', (e) => {
                     const files = Array.from(e.target.files); if (!files.length) return; let loaded = 0;
                     files.forEach((file, index) => {
                         if (index >= 6) return; const reader = new FileReader();
-                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[index] = img; loaded++; if (loaded === Math.min(files.length, 6)) { LayerManager.rebuildStoryGridUploadCells(); Renderer.renderPreview(); } }; img.src = ev.target.result; }; reader.readAsDataURL(file);
+                        reader.onload = (ev) => { const img = new Image(); img.onload = () => { state.story.gridImages[index] = img; loaded++; if (loaded === Math.min(files.length, 6)) { LayerManager.rebuildStoryGridUploadCells(); Renderer.renderPreview(); HistoryManager.push(); } }; img.src = ev.target.result; }; reader.readAsDataURL(file);
                     });
                 });
 
                 document.querySelectorAll('.btn-story-layout').forEach(btn => btn.addEventListener('click', () => LayerManager.setStoryLayout(btn.dataset.layout)));
                 document.getElementById('btn-sample-assets').addEventListener('click', () => LayerManager.loadSampleAssets());
                 
-                document.getElementById('chk-show-date').addEventListener('change', (e) => { state.dateLayer.show = e.target.checked; Renderer.renderPreview(); });
-                document.getElementById('input-date-val').addEventListener('change', (e) => { state.dateLayer.raw = e.target.value; Renderer.renderPreview(); });
-                document.getElementById('input-date-format').addEventListener('change', (e) => { state.dateLayer.format = e.target.value; Renderer.renderPreview(); });
+                const registerChange = (id, eventType) => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.addEventListener(eventType, () => {
+                            Renderer.renderPreview();
+                            HistoryManager.push();
+                        });
+                    }
+                };
 
-                document.getElementById('chk-show-text').addEventListener('change', (e) => { state.textLayer.show = e.target.checked; Renderer.renderPreview(); });
-                document.getElementById('input-free-text').addEventListener('input', (e) => { state.textLayer.text = e.target.value; Renderer.renderPreview(); });
-                document.getElementById('input-font-family').addEventListener('change', (e) => { state.textLayer.fontFamily = e.target.value; Renderer.renderPreview(); });
-                document.getElementById('input-text-color').addEventListener('input', (e) => { state.textLayer.color = e.target.value; Renderer.renderPreview(); });
-                document.getElementById('input-text-shadow').addEventListener('input', (e) => { state.textLayer.shadowBlur = parseInt(e.target.value); Renderer.renderPreview(); });
-                
-                // 5 大位置预设
-                document.getElementById('btn-text-pos-top').addEventListener('click', () => { 
-                    state.dateLayer.offset.y = 8; state.dateLayer.offset.x = 50; 
-                    state.textLayer.offset.y = 15; state.textLayer.offset.x = 50; 
-                    GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); 
-                });
-                document.getElementById('btn-text-pos-above').addEventListener('click', () => { 
-                    state.dateLayer.offset.y = 25; state.dateLayer.offset.x = 50; 
-                    state.textLayer.offset.y = 31; state.textLayer.offset.x = 50; 
-                    GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); 
-                });
-                document.getElementById('btn-text-pos-center').addEventListener('click', () => { 
-                    state.dateLayer.offset.y = 45; state.dateLayer.offset.x = 50; 
-                    state.textLayer.offset.y = 52; state.textLayer.offset.x = 50; 
-                    GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); 
-                });
-                document.getElementById('btn-text-pos-below').addEventListener('click', () => { 
-                    state.dateLayer.offset.y = 68; state.dateLayer.offset.x = 50; 
-                    state.textLayer.offset.y = 75; state.textLayer.offset.x = 50; 
-                    GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); 
-                });
-                document.getElementById('btn-text-pos-bottom').addEventListener('click', () => { 
-                    state.dateLayer.offset.y = 88; state.dateLayer.offset.x = 50; 
-                    state.textLayer.offset.y = 94; state.textLayer.offset.x = 50; 
-                    GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); 
-                });
+                registerChange('chk-show-date', 'change');
+                registerChange('input-date-val', 'change');
+                registerChange('input-date-format', 'change');
+                registerChange('chk-show-text', 'change');
+                registerChange('input-free-text', 'input');
+                registerChange('input-font-family', 'change');
+                registerChange('input-text-color', 'input');
+                registerChange('input-text-shadow', 'input');
+                registerChange('input-center-size', 'input');
+                registerChange('input-grid-gap', 'input');
+                registerChange('input-border-width', 'input');
+                registerChange('input-border-color', 'input');
+                registerChange('input-radius', 'input'); // 修复圆角调整无法响应的问题
+                registerChange('input-grain', 'input');
 
-                document.getElementById('input-center-size').addEventListener('input', (e) => { state.centerSize = parseInt(e.target.value); document.getElementById('center-size-val').textContent = state.centerSize + '%'; Renderer.renderPreview(); });
-                document.getElementById('input-grid-gap').addEventListener('input', (e) => { state.gridGap = parseInt(e.target.value); document.getElementById('grid-gap-val').textContent = state.gridGap + 'px'; Renderer.renderPreview(); });
-                document.getElementById('input-border-width').addEventListener('input', (e) => { state.borderWidth = parseInt(e.target.value); document.getElementById('border-width-val').textContent = state.borderWidth + 'px'; Renderer.renderPreview(); });
-                document.querySelectorAll('.btn-preset-color').forEach(btn => btn.addEventListener('click', () => { state.borderColor = btn.dataset.color; document.getElementById('input-border-color').value = btn.dataset.color; Renderer.renderPreview(); }));
-                document.getElementById('input-border-color').addEventListener('input', (e) => { state.borderColor = e.target.value; Renderer.renderPreview(); });
-                document.getElementById('input-radius').addEventListener('input', (e) => { state.radius = parseInt(e.target.value); document.getElementById('radius-val').textContent = state.radius + 'px'; Renderer.renderPreview(); });
-                document.getElementById('input-grain').addEventListener('input', (e) => { state.grainOpacity = parseInt(e.target.value) / 100; document.getElementById('grain-val').textContent = state.grainOpacity * 100 + '%'; Renderer.renderPreview(); });
+                document.getElementById('btn-text-pos-top').addEventListener('click', () => { state.dateLayer.offset.y = 8; state.dateLayer.offset.x = 50; state.textLayer.offset.y = 15; state.textLayer.offset.x = 50; GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); HistoryManager.push(); });
+                document.getElementById('btn-text-pos-above').addEventListener('click', () => { state.dateLayer.offset.y = 25; state.dateLayer.offset.x = 50; state.textLayer.offset.y = 31; state.textLayer.offset.x = 50; GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); HistoryManager.push(); });
+                document.getElementById('btn-text-pos-center').addEventListener('click', () => { state.dateLayer.offset.y = 45; state.dateLayer.offset.x = 50; state.textLayer.offset.y = 52; state.textLayer.offset.x = 50; GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); HistoryManager.push(); });
+                document.getElementById('btn-text-pos-below').addEventListener('click', () => { state.dateLayer.offset.y = 68; state.dateLayer.offset.x = 50; state.textLayer.offset.y = 75; state.textLayer.offset.x = 50; GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); HistoryManager.push(); });
+                document.getElementById('btn-text-pos-bottom').addEventListener('click', () => { state.dateLayer.offset.y = 88; state.dateLayer.offset.x = 50; state.textLayer.offset.y = 94; state.textLayer.offset.x = 50; GestureManager.setActiveLayer('textLayer'); Renderer.renderPreview(); HistoryManager.push(); });
+
+                document.querySelectorAll('.btn-preset-color').forEach(btn => btn.addEventListener('click', () => { state.borderColor = btn.dataset.color; document.getElementById('input-border-color').value = btn.dataset.color; Renderer.renderPreview(); HistoryManager.push(); }));
                 
-                // 抽屉上下拉伸拖拽手柄
+                // 抽屉式面板拉伸与收缩手势支持
                 const editorPanel = document.getElementById('editor-panel');
                 const handle = document.getElementById('editor-handle-bar');
+                const handleIcon = document.getElementById('handle-icon');
                 let startY = 0, startHeight = 0;
 
                 const onHandleStart = (clientY) => {
@@ -1228,12 +1305,27 @@
                 };
                 const onHandleMove = (clientY) => {
                     const dy = startY - clientY;
-                    const newHeight = Math.max(160, Math.min(window.innerHeight - 80, startHeight + dy));
+                    const newHeight = Math.max(50, Math.min(window.innerHeight - 80, startHeight + dy));
                     editorPanel.style.height = newHeight + 'px';
+                    if (newHeight < 100) {
+                        handleIcon.style.transform = 'rotate(180deg)';
+                    } else {
+                        handleIcon.style.transform = 'rotate(0deg)';
+                    }
                 };
 
-                handle.addEventListener('mousedown', (e) => { onHandleStart(e.clientY); const move = (ev) => onHandleMove(ev.clientY); const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }; window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); });
-                handle.addEventListener('touchstart', (e) => { onHandleStart(e.touches[0].clientY); const move = (ev) => onHandleMove(ev.touches[0].clientY); const up = () => { window.removeEventListener('touchmove', move); window.removeEventListener('touchend', up); }; window.addEventListener('touchmove', move); window.addEventListener('touchend', up); }, { passive: true });
+                handle.addEventListener('click', () => {
+                    if (editorPanel.offsetHeight > 100) {
+                        editorPanel.style.height = '60px'; // 收到底部只露导航
+                        handleIcon.style.transform = 'rotate(180deg)';
+                    } else {
+                        editorPanel.style.height = '42vh'; // 展开
+                        handleIcon.style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                handle.addEventListener('mousedown', (e) => { e.stopPropagation(); onHandleStart(e.clientY); const move = (ev) => onHandleMove(ev.clientY); const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }; window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); });
+                handle.addEventListener('touchstart', (e) => { e.stopPropagation(); onHandleStart(e.touches[0].clientY); const move = (ev) => onHandleMove(ev.touches[0].clientY); const up = () => { window.removeEventListener('touchmove', move); window.removeEventListener('touchend', up); }; window.addEventListener('touchmove', move); window.addEventListener('touchend', up); }, { passive: true });
 
                 document.getElementById('btn-download').addEventListener('click', () => ExportEngine.generate());
                 document.getElementById('btn-close-modal').addEventListener('click', () => document.getElementById('mobile-download-modal').classList.add('opacity-0', 'pointer-events-none'));
@@ -1254,6 +1346,7 @@
                 lucide.createIcons();
                 LayerManager.adaptWorkspaceScale(); 
                 Renderer.renderPreview(); 
+                HistoryManager.push();
             }, 150);
         });
     </script>
