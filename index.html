@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Riyad Studio V6.4 美学排版生成器</title>
+    <title>Riyad Studio V6.4 终极排版生成器</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -115,15 +115,15 @@
         </div>
         <hr class="border-[#EFEAE2] dark:border-[#3E3834] hidden lg:block">
 
-        <!-- 显眼的第一步：画幅比例选择 -->
+        <!-- 步骤 1：画幅比例选择 (显眼放顶部) -->
         <div class="flex flex-col gap-1.5 bg-[#FAF6F0] dark:bg-[#35302C] p-3 rounded-2xl border border-[#8B7355]/20 dark:border-[#52B788]/30 shadow-sm">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1.5">
-                <i data-lucide="aspect-ratio" class="w-4 h-4"></i> 第一步：选择画布画幅比例
+                <i data-lucide="aspect-ratio" class="w-4 h-4"></i> 第一步：选择画布比例
             </span>
             <div id="ratio-group" class="grid grid-cols-3 gap-2 mt-1"></div>
         </div>
 
-        <!-- 第二步：核心排版模式选择 -->
+        <!-- 步骤 2：核心排版模式 -->
         <div class="flex flex-col gap-1.5">
             <span class="text-[11px] font-bold text-[#8B7355] dark:text-[#52B788] uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="layout-template" class="w-3.5 h-3.5"></i> 第二步：核心排版模式
@@ -661,12 +661,13 @@
                 ctx.restore();
             },
 
+            // 100% 严格复原 v6.3 圆角路径绘制算法
             drawRoundedPath(ctx, x, y, width, height, radius) {
                 if (radius <= 0) { ctx.rect(x, y, width, height); return; }
                 ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
                 ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
                 ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
                 ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y);
                 ctx.closePath();
             }
@@ -952,7 +953,7 @@
                 const sampleBg = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80";
                 const samples = ["https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=500&q=80", "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=500&q=80"];
                 
-                // 1. 加载镜像互换模式样图 (图 A & 图 B)
+                // 1. 镜像模式样图
                 const imgA = new Image(); imgA.crossOrigin = "anonymous";
                 imgA.onload = () => {
                     state.inverse.imageA = imgA;
@@ -973,7 +974,7 @@
                 };
                 imgB.src = samples[0];
 
-                // 2. 加载 Ins Story 模式样图
+                // 2. Ins Story 拼图样图
                 let loaded = 0; 
                 const check = () => { 
                     loaded++; 
